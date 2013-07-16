@@ -3,7 +3,7 @@ django-summernote
 
 (under development)
 
-[Summernote](https://github.com/HackerWins/summernote) is a simple HTML5 WYSIWYG editor based Bootstrap.
+[Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor based on Twitter's Bootstrap.
 And this `django-summernote` plugin allows you to embed Summernote editor into your Django admin page.
 
 USAGE
