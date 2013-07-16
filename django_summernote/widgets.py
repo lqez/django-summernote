@@ -4,7 +4,6 @@ from django.utils.safestring import mark_safe
 
 
 class SummernoteWidget(forms.Textarea):
-
     class Media:
         js = (
             'http://code.jquery.com/jquery-1.9.1.min.js',
@@ -14,7 +13,7 @@ class SummernoteWidget(forms.Textarea):
         )
         css = {
             'screen': (
-                'http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.min.css',
+                '//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.min.css',
                 (settings.STATIC_URL or settings.MEDIA_URL) + 'django_summernote/summernote-bootstrap.css',
             )
         }
