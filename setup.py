@@ -18,7 +18,7 @@ CLASSIFIERS = [
     'License :: OSI Approved :: MIT License',
 ]
 
-for directory in ['static']:
+for directory in ['static', 'templates']:
     for root, dirs, files in os.walk(os.path.join(MODULE_NAME, directory)):
         for filename in files:
             PACKAGE_DATA.append("%s/%s" % (root[len(MODULE_NAME) + 1:], filename))

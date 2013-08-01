@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Summernote for django</title>
+        <!-- include libries(jQuery, bootstrap, fontawesome) -->
+        <script src="//code.jquery.com/jquery-1.9.1.min.js"></script> 
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+        <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+
+        <!-- include summernote css/js -->
+        <script src="{{ STATIC_URL }}django_summernote/summernote.js"></script>
+        <link href="{{ STATIC_URL }}django_summernote/summernote.css" rel="stylesheet">
+
+        <!-- include django-summernote -->
+        <link href="{{ STATIC_URL }}django_summernote/django_summernote.css" rel="stylesheet">
+    </head>
+    <body>
+        <div id="summernote"></div>
+    </body>
+    <script>
+        var src = window.parent.document.getElementById("{{ id }}");
+        $("#summernote").html(src.value);
+        $("#summernote").summernote({
+            height: 250,
+            blur: function() {
+                src.value = $("#summernote").code()[0];
+            }
+        });
+    </script>
+</html>

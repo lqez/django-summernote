@@ -14,12 +14,12 @@
    * func utils (for high-order func's arg)
    */
   var func = function() {
-    var eq = function(target) {
-      return function(current) { return target === current; };
+    var eq = function(nodeA) {
+      return function(nodeB) { return nodeA === nodeB; };
     };
-    
+    var eq2 = function(nodeA, nodeB) { return nodeA === nodeB; };
     var fail = function() { return false; };
-    return { eq: eq, fail: fail };
+    return { eq: eq, eq2: eq2, fail: fail };
   }();
   
   /**
@@ -47,7 +47,7 @@
 
     var compact = function(array) {
       var aResult = [];
-      for(var idx = 0; idx < array.length; idx ++) {
+      for (var idx = 0, sz = array.length; idx < sz; idx ++) {
         if (array[idx]) { aResult.push(array[idx]); };
       };
       return aResult;
@@ -61,9 +61,8 @@
    * dom utils
    */
   var dom = function() {
-    // nodeName of element are always uppercase.
-    // http://ejohn.org/blog/nodename-case-sensitivity/
     var makePredByNodeName = function(sNodeName) {
+      // nodeName of element is always uppercase.
       return function(node) { return node && node.nodeName === sNodeName; };
     };
     
@@ -77,6 +76,10 @@
 
     var isEditable = function(node) {
       return node && $(node).hasClass('note-editable');
+    };
+
+    var isControlSizing = function(node) {
+      return node && $(node).hasClass('note-control-sizing');
     };
 
     // ancestor: find nearest ancestor predicate hit
@@ -132,7 +135,7 @@
       pred = pred || func.fail;      
 
       var aNext = [];
-      while(node) {
+      while (node) {
         aNext.push(node);
         if (node === pred) { break; }
         node = node.nextSibling;
@@ -148,6 +151,7 @@
       } else {
         parent.appendChild(node);
       }
+      return node;
     };
 
     // appends: append children
@@ -166,6 +170,28 @@
       return node.childNodes.length;
     };
 
+    // position: offset from parent.
+    var position = function(node) {
+      var offset = 0;
+      while (node = node.previousSibling) { offset += 1; }
+      return offset;
+    };
+
+    // makeOffsetPath: return offsetPath(offset list) from ancestor
+    var makeOffsetPath = function(ancestor, node) {
+      var aAncestor = list.initial(listAncestor(node, func.eq(ancestor)));
+      return $.map(aAncestor, position).reverse();
+    };
+
+    // fromtOffsetPath: return element from offsetPath(offset list)
+    var fromOffsetPath = function(ancestor, aOffset) {
+      var current = ancestor;
+      for (var i = 0, sz = aOffset.length; i < sz; i++) {
+        current = current.childNodes[aOffset[i]];
+      }
+      return current;
+    };
+
     // splitData: split element or #text
     var splitData = function(node, offset) {
       if (offset === 0) { return node; }
@@ -175,7 +201,7 @@
       if (isText(node)) { return node.splitText(offset); }
 
       // splitElement
-      var child = current.childNodes[offset];
+      var child = node.childNodes[offset];
       node = insertAfter(node.cloneNode(false), node);
       return appends(node, listNext(child));
     };
@@ -200,15 +226,17 @@
     return {
       isText: isText,
       isPara: isPara, isList: isList,
-      isEditable: isEditable,
+      isEditable: isEditable, isControlSizing: isControlSizing,
       isAnchor: makePredByNodeName('A'),
       isDiv: makePredByNodeName('DIV'), isSpan: makePredByNodeName('SPAN'),
       isB: makePredByNodeName('B'), isU: makePredByNodeName('U'),
       isS: makePredByNodeName('S'), isI: makePredByNodeName('I'),
-      ancestor: ancestor, listAncestor: listAncestor,
-      listNext: listNext,
+      isImg: makePredByNodeName('IMG'),
+      ancestor: ancestor, listAncestor: listAncestor, listNext: listNext,
       commonAncestor: commonAncestor, listBetween: listBetween,
-      insertAfter: insertAfter, split: split
+      insertAfter: insertAfter, position: position,
+      makeOffsetPath: makeOffsetPath, fromOffsetPath: fromOffsetPath,
+      split: split
     };
   }();
 
@@ -244,9 +272,11 @@
     this.select = function() {
       var nativeRng = nativeRange();
       if (bW3CRangeSupport) {
-        document.getSelection().addRange(nativeRng);
+        var selection = document.getSelection();
+        if (selection.rangeCount > 0) { selection.removeAllRanges(); }
+        selection.addRange(nativeRng);
       } // TODO: handle IE8+ TextRange
-    }
+    };
     
     // listPara: listing paragraphs on range
     this.listPara = function() {
@@ -254,10 +284,7 @@
       var aPara = list.compact($.map(aNode, function(node) {
         return dom.ancestor(node, dom.isPara);
       }));
-      var aaClustered = list.clusterBy(aPara, function(nodeA, nodeB) {
-        return nodeA === nodeB;
-      });
-      return $.map(aaClustered, list.head);
+      return $.map(list.clusterBy(aPara, func.eq2), list.head);
     };
     
     // isOnList: judge whether range is on list node or not
@@ -302,6 +329,22 @@
         return nativeRng.toString();
       } // TODO: IE8
     };
+
+    //bookmark: offsetPath bookmark
+    this.bookmark = function(elEditable) {
+      return {
+        s: { path: dom.makeOffsetPath(elEditable, sc), offset: so },
+        e: { path: dom.makeOffsetPath(elEditable, ec), offset: eo }
+      };
+    };
+  };
+
+  // createRangeFromBookmark
+  var createRangeFromBookmark = function(elEditable, bookmark) {
+    return new Range(dom.fromOffsetPath(elEditable, bookmark.s.path),
+                     bookmark.s.offset,
+                     dom.fromOffsetPath(elEditable, bookmark.e.path),
+                     bookmark.e.offset);
   };
   
   /**
@@ -328,37 +371,38 @@
       });
     };
     
-    // get current style
-    this.current = function(rng) {
+    // get current style, elTarget: target element on event.
+    this.current = function(rng, elTarget) {
       var welCont = $(dom.isText(rng.sc) ? rng.sc.parentNode : rng.sc);
-      var oStyle = welCont.curStyles('font-size', 'font-weight', 'font-style',
-                                     'text-decoration', 'text-align',
-                                     'list-style-type', 'line-height') || {};
+      var oStyle = welCont.css(['font-size', 'font-weight', 'font-style',
+                                'text-decoration', 'text-align',
+                                'list-style-type', 'line-height']) || {};
                                      
-      oStyle.fontSize = parseInt(oStyle.fontSize);
+      oStyle['font-size'] = parseInt(oStyle['font-size']);
 
-      // FF fontWeight patch(number to 'bold' or 'normal')
-      if (!isNaN(parseInt(oStyle.fontWeight))) {
-        oStyle.fontWeight = oStyle.fontWeight > 400 ? 'bold' : 'normal';
+      // FF font-weight patch(number to 'bold' or 'normal')
+      if (!isNaN(parseInt(oStyle['font-weight']))) {
+        oStyle['font-weight'] = oStyle['font-weight'] > 400 ? 'bold' : 'normal';
       }
       
-      // listStyleType to listStyle(unordered, ordered)
+      // list-style-type to list-style(unordered, ordered)
       if (!rng.isOnList()) {
-        oStyle.listStyle = 'none';
+        oStyle['list-style'] = 'none';
       } else {
         var aOrderedType = ['circle', 'disc', 'disc-leading-zero', 'square'];
-        var bUnordered = $.inArray(oStyle.listStyleType, aOrderedType) > -1;
-        oStyle.listStyle = bUnordered ? 'unordered' : 'ordered';
+        var bUnordered = $.inArray(oStyle['list-style-type'], aOrderedType) > -1;
+        oStyle['list-style'] = bUnordered ? 'unordered' : 'ordered';
       }
 
       var elPara = dom.ancestor(rng.sc, dom.isPara);
-      if (elPara && elPara.style.lineHeight) {
-        oStyle.lineHeight = elPara.style.lineHeight;
+      if (elPara && elPara.style['line-height']) {
+        oStyle['line-height'] = elPara.style.lineHeight;
       } else {
-        var lineHeight = parseInt(oStyle.lineHeight) / parseInt(oStyle.fontSize);
-        oStyle.lineHeight = lineHeight.toFixed(1);
+        var lineHeight = parseInt(oStyle['line-height']) / parseInt(oStyle['font-size']);
+        oStyle['line-height'] = lineHeight.toFixed(1);
       }
 
+      oStyle.image = dom.isImg(elTarget) && elTarget;
       oStyle.anchor = rng.isOnAnchor() && dom.ancestor(rng.sc, dom.isAnchor);
       oStyle.aAncestor = dom.listAncestor(rng.sc, dom.isEditable);
 
@@ -368,23 +412,37 @@
 
   /**
    * History
-   * TODO: move undo/redo stack to jquery's data for multiple editor
    */
-  var History = function(fnApplyState) {
+  var History = function() {
     var aUndo = [], aRedo = [];
 
-    this.undo = function(oState) {
+    var makeSnap = function(welEditable) {
+      var elEditable = welEditable[0], rng = new Range();
+      return {
+        contents: welEditable.html(), bookmark: rng.bookmark(elEditable),
+        scrollTop: welEditable.scrollTop()
+      };
+    };
+
+    var applySnap = function(welEditable, oSnap) {
+      welEditable.html(oSnap.contents).scrollTop(oSnap.scrollTop);
+      createRangeFromBookmark(welEditable[0], oSnap.bookmark).select();
+    };
+
+    this.undo = function(welEditable) {
+      var oSnap = makeSnap(welEditable);
       if (aUndo.length === 0) { return; }
-      fnApplyState(aUndo.pop()), aRedo.push(oState);
+      applySnap(welEditable, aUndo.pop()), aRedo.push(oSnap);
     };
 
-    this.redo = function(oState) {
+    this.redo = function(welEditable) {
+      var oSnap = makeSnap(welEditable);
       if (aRedo.length === 0) { return; }
-      fnApplyState(aRedo.pop()), aUndo.push(oState);
+      applySnap(welEditable, aRedo.pop()), aUndo.push(oSnap);
     };
 
-    this.recordUndo = function(oState) {
-      aRedo = [], aUndo.push(oState);
+    this.recordUndo = function(welEditable) {
+      aRedo = [], aUndo.push(makeSnap(welEditable));
     };
   };
   
@@ -394,27 +452,24 @@
   var Editor = function() {
     //currentStyle
     var style = new Style();
-    this.currentStyle = function() {
+    this.currentStyle = function(elTarget) {
       if (document.getSelection().rangeCount == 0) { return null; }
-      return style.current((new Range()));
+      return style.current((new Range()), elTarget);
     };
 
-    // history and command, TODO: Range -> XPath Bookmark, Scroll
-    var makeState = function() {
-      return { contents: $('.note-editable').html(), range: new Range() };
+    // undo
+    this.undo = function(welEditable) {
+      welEditable.data('NoteHistory').undo(welEditable);
     };
-    var updateState = function(oState) {
-      $('.note-editable').html(oState.contents);
-    };
-    var history = new History(updateState);
-    this.undo = function() { history.undo(makeState()); };
-    this.redo = function() { history.redo(makeState()); };
 
-    var makeExecCommand = function(sCmd) {
-      return function(sValue) {
-        history.recordUndo(makeState());
-        document.execCommand(sCmd, false, sValue);
-      };
+    // redo
+    this.redo = function(welEditable) {
+      welEditable.data('NoteHistory').redo(welEditable);
+    };
+
+    // recordUndo
+    var recordUndo = this.recordUndo = function(welEditable) {
+      welEditable.data('NoteHistory').recordUndo(welEditable);
     };
 
     // native commands(with execCommand)
@@ -422,24 +477,29 @@
                 'justifyRight', 'justifyFull', 'insertOrderedList',
                 'insertUnorderedList', 'indent', 'outdent', 'formatBlock',
                 'removeFormat', 'backColor', 'foreColor', 'insertImage'];
-    for (var idx=0, len=aCmd.length; idx < len; idx ++) {
-      this[aCmd[idx]] = makeExecCommand(aCmd[idx]);
+    for (var idx = 0, len=aCmd.length; idx < len; idx ++) {
+      this[aCmd[idx]] = function(sCmd) {
+        return function(welEditable, sValue) {
+          recordUndo(welEditable);
+          document.execCommand(sCmd, false, sValue);
+        };
+      }(aCmd[idx]);
     }                
     
-    this.fontSize = function(sValue) {
-      history.recordUndo(makeState());
+    this.fontSize = function(welEditable, sValue) {
+      recordUndo(welEditable);
       style.styleFont(new Range(), {fontSize: sValue + 'px'});
     };
     
-    this.lineHeight = function(sValue) {
-      history.recordUndo(makeState());
+    this.lineHeight = function(welEditable, sValue) {
+      recordUndo(welEditable);
       style.stylePara(new Range(), {lineHeight: sValue});
     };
 
-    this.unlink = function() {
+    this.unlink = function(welEditable) {
       var rng = new Range();
       if (rng.isOnAnchor()) {
-        history.recordUndo(makeState());
+        recordUndo(welEditable);
         var elAnchor = dom.ancestor(rng.sc, dom.isAnchor);
         rng = new Range(elAnchor, 0, elAnchor, 1);
         rng.select();
@@ -447,7 +507,7 @@
       }
     };
 
-    this.setLinkDialog = function(fnShowDialog) {
+    this.setLinkDialog = function(welEditable, fnShowDialog) {
       var rng = new Range();
       if (rng.isOnAnchor()) {
         var elAnchor = dom.ancestor(rng.sc, dom.isAnchor);
@@ -459,7 +519,7 @@
         url: rng.isOnAnchor() ? dom.ancestor(rng.sc, dom.isAnchor).href : ""
       }, function(sLinkUrl) {
         rng.select();
-        history.recordUndo(makeState());
+        recordUndo(welEditable);
         if (sLinkUrl.toLowerCase().indexOf("http://") !== 0) {
           sLinkUrl = "http://" + sLinkUrl;
         }
@@ -467,14 +527,14 @@
       });
     };
     
-    this.color = function(sObjColor) {
+    this.color = function(welEditable, sObjColor) {
       var oColor = JSON.parse(sObjColor);
-      this.foreColor(oColor.foreColor);
-      this.backColor(oColor.backColor);
+      this.foreColor(welEditable, oColor.foreColor);
+      this.backColor(welEditable, oColor.backColor);
     };
     
-    this.insertTable = function(sDim) {
-      history.recordUndo(makeState());
+    this.insertTable = function(welEditable, sDim) {
+      recordUndo(welEditable);
       var aDim = sDim.split('x');
       var nCol = aDim[0], nRow = aDim[1];
       
@@ -493,6 +553,22 @@
       var sTable = '<table class="table table-bordered">' + sTR + '</table>';
       (new Range()).insertNode($(sTable)[0]);
     };
+
+    this.float = function(welEditable, sValue, elTarget) {
+      recordUndo(welEditable);
+      elTarget.style.float = sValue;
+    };
+
+    this.resize = function(welEditable, sValue, elTarget) {
+      recordUndo(welEditable);
+      elTarget.style.width = welEditable.width() * sValue + 'px';
+      elTarget.style.height = "";
+    };
+
+    this.resizeTo = function(pos, elTarget) {
+      elTarget.style.width = pos.x + 'px';
+      elTarget.style.height = pos.y + 'px';
+    };
   };
 
   /**
@@ -509,11 +585,11 @@
       };
       
       var welFontsize = welToolbar.find('.note-fontsize');
-      welFontsize.find('.note-current-fontsize').html(oStyle.fontSize);
-      checkDropdownMenu(welFontsize, parseFloat(oStyle.fontSize));
+      welFontsize.find('.note-current-fontsize').html(oStyle['font-size']);
+      checkDropdownMenu(welFontsize, parseFloat(oStyle['font-size']));
       
       var welLineHeight = welToolbar.find('.note-line-height');
-      checkDropdownMenu(welLineHeight, parseFloat(oStyle.lineHeight));
+      checkDropdownMenu(welLineHeight, parseFloat(oStyle['line-height']));
       
       //check button state
       var btnState = function(sSelector, pred) {
@@ -522,37 +598,37 @@
       };
 
       btnState('button[data-event="bold"]', function() {
-        return oStyle.fontWeight === 'bold';
+        return oStyle['font-weight'] === 'bold';
       });
       btnState('button[data-event="italic"]', function() {
-        return oStyle.fontStyle === 'italic';
+        return oStyle['font-style'] === 'italic';
       });
       btnState('button[data-event="underline"]', function() {
-        return oStyle.textDecoration === 'underline';
+        return oStyle['text-decoration'] === 'underline';
       });
       btnState('button[data-event="justifyLeft"]', function() {
-        return oStyle.textAlign === 'left' || oStyle.textAlign === 'start';
+        return oStyle['text-align'] === 'left' || oStyle['text-align'] === 'start';
       });
       btnState('button[data-event="justifyCenter"]', function() {
-        return oStyle.textAlign === 'center';
+        return oStyle['text-align'] === 'center';
       });
       btnState('button[data-event="justifyRight"]', function() {
-        return oStyle.textAlign === 'right';
+        return oStyle['text-align'] === 'right';
       });
       btnState('button[data-event="justifyFull"]', function() {
-        return oStyle.textAlign === 'justify';
+        return oStyle['text-align'] === 'justify';
       });
       btnState('button[data-event="insertUnorderedList"]', function() {
-        return oStyle.listStyle === 'unordered';
+        return oStyle['list-style'] === 'unordered';
       });
       btnState('button[data-event="insertOrderedList"]', function() {
-        return oStyle.listStyle === 'ordered';
+        return oStyle['list-style'] === 'ordered';
       });
     };
     
     this.updateRecentColor = function(elBtn, sEvent, sValue) {
-      var welNoteColor = $(elBtn).closest('.note-color');
-      var welRecentColor = welNoteColor.find('.note-recent-color');
+      var welColor = $(elBtn).closest('.note-color');
+      var welRecentColor = welColor.find('.note-recent-color');
       var oColor = JSON.parse(welRecentColor.attr('data-value'));
       oColor[sEvent] = sValue;
       welRecentColor.attr('data-value', JSON.stringify(oColor));
@@ -566,12 +642,12 @@
    */
   var Popover = function() {
     this.update = function(welPopover, oStyle) {
-      var welLinkPopover = welPopover.find('.note-link-popover');
+      var welLinkPopover = welPopover.find('.note-link-popover'),
+          welImagePopover = welPopover.find('.note-image-popover');
       if (oStyle.anchor) {
         var welAnchor = welLinkPopover.find('a');
         welAnchor.attr('href', oStyle.anchor.href).html(oStyle.anchor.href);
         
-        //popover position
         var rect = oStyle.anchor.getBoundingClientRect();
         welLinkPopover.css({
           display: 'block',
@@ -581,10 +657,46 @@
       } else {
         welLinkPopover.hide();
       }
+
+      if (oStyle.image) {
+        var rect = oStyle.image.getBoundingClientRect();
+        welImagePopover.css({
+          display: 'block',
+          left: rect.left,
+          top: $(document).scrollTop() + rect.bottom
+        });
+      } else {
+        welImagePopover.hide();
+      }
     };
     
     this.hide = function(welPopover) {
       welPopover.children().hide();
+    };
+  };
+
+  /**
+   * Handle
+   */
+  var Handle = function() {
+    this.update = function(welHandle, oStyle) {
+      var welSelection = welHandle.find('.note-control-selection');
+      if (oStyle.image) {
+        var rect = oStyle.image.getBoundingClientRect();
+        welSelection.css({
+          display: 'block',
+          left: rect.left + 'px',
+          top: $(document).scrollTop() + rect.top + 'px',
+          width: rect.width + 'px',
+          height: rect.height + 'px'
+        }).data('target', oStyle.image); // save current image element.
+      } else {
+        welSelection.hide();
+      }
+    };
+
+    this.hide = function(welHandle) {
+      welHandle.children().hide();
     };
   };
   
@@ -650,53 +762,75 @@
   var EventHandler = function() {
     var editor = new Editor();
     var toolbar = new Toolbar(), popover = new Popover();
-    var dialog = new Dialog();
+    var handle = new Handle(), dialog = new Dialog();
     
-    var key = { TAB: 9, B: 66, E: 69, I: 73, J: 74, K: 75, L: 76, R: 82,
-                U: 85, Y: 89, Z: 90,
-                NUM0: 48, NUM1: 49, NUM4: 52, NUM7: 55, NUM8: 56};
+    var key = { BACKSPACE: 8, TAB: 9, ENTER: 13, SPACE: 32,
+                NUM0: 48, NUM1: 49, NUM4: 52, NUM7: 55, NUM8: 56, 
+                B: 66, E: 69, I: 73, J: 74, K: 75, L: 76, R: 82,
+                U: 85, Y: 89, Z: 90, BACKSLACH: 220 };
+
+    // makeLayoutInfo from editor's descendant node.
+    var makeLayoutInfo = function(descendant) {
+      var welEditor = $(descendant).closest('.note-editor');
+      return {
+        editor: function() { return welEditor; },
+        editable: function() { return welEditor.find('.note-editable'); },
+        toolbar: function() { return welEditor.find('.note-toolbar'); },
+        popover: function() { return welEditor.find('.note-popover'); },
+        handle: function() { return welEditor.find('.note-handle'); },
+        dialog: function() { return welEditor.find('.note-dialog'); }
+      };
+    };
 
     var hKeydown = function(event) {
-      var bCmd = bMac ? event.metaKey : event.ctrlKey;
-      var bShift = event.shiftKey;
-      if (bCmd && ((bShift && event.keyCode === key.Z) ||
-                   event.keyCode === key.Y)) { // redo
-        editor.redo();
-      } else if (bCmd && event.keyCode === key.Z) { // undo
-        editor.undo();
-      } else if (bCmd && event.keyCode === key.B) { // bold
-        editor.bold();
-      } else if (bCmd && event.keyCode === key.I) { // italic
-        editor.italic();
-      } else if (bCmd && event.keyCode === key.U) { // underline
-        editor.underline();
-      } else if (bCmd && event.keyCode === key.K) { // showLinkDialog
-        var welNoteEditor = $(event.target).closest('.note-editor');
-        var welNoteDialog = welNoteEditor.find('.note-dialog');
-        editor.setLinkDialog(function(linkInfo, cb) {
-          dialog.showLinkDialog(welNoteDialog, linkInfo, cb);
+      var bCmd = bMac ? event.metaKey : event.ctrlKey,
+          bShift = event.shiftKey, keyCode = event.keyCode;
+
+      // optimize
+      var oLayoutInfo = (bCmd || bShift) ? makeLayoutInfo(event.target) : null;
+
+      if (bCmd && ((bShift && keyCode === key.Z) || keyCode === key.Y)) {
+        editor.redo(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.Z) {
+        editor.undo(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.B) {
+        editor.bold(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.I) {
+        editor.italic(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.U) {
+        editor.underline(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.BACKSLACH) {
+        editor.removeFormat(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.K) {
+        editor.setLinkDialog(oLayoutInfo.editable(), function(linkInfo, cb) {
+          dialog.showLinkDialog(oLayoutInfo.dialog(), linkInfo, cb);
         });
-      } else if (bCmd && bShift && event.keyCode === key.L) {
-        editor.justifyLeft();
-      } else if (bCmd && bShift && event.keyCode === key.E) {
-        editor.justifyCenter();
-      } else if (bCmd && bShift && event.keyCode === key.R) {
-        editor.justifyRight();
-      } else if (bCmd && bShift && event.keyCode === key.J) {
-        editor.justifyFull();
-      } else if (bCmd && bShift && event.keyCode === key.NUM7) {
-        editor.insertUnorderedList(); // insertUnorderedList
-      } else if (bCmd && bShift && event.keyCode === key.NUM8) {
-        editor.insertOrderedList(); // insertUnorderedList
-      } else if (bShift && event.keyCode === key.TAB) { // shift + tab
-        editor.outdent();
-      } else if (event.keyCode === key.TAB) { // tab
-        editor.indent();
-      } else if (bCmd && event.keyCode === key.NUM0) { // formatBlock Paragraph
-        editor.formatBlock('P');
-      } else if (bCmd && (key.NUM1 <= event.keyCode && event.keyCode <= key.NUM4)) { // formatBlock H1~H4
-        editor.formatBlock('H' + String.fromCharCode(event.keyCode));
+      } else if (bCmd && bShift && keyCode === key.L) {
+        editor.justifyLeft(oLayoutInfo.editable());
+      } else if (bCmd && bShift && keyCode === key.E) {
+        editor.justifyCenter(oLayoutInfo.editable());
+      } else if (bCmd && bShift && keyCode === key.R) {
+        editor.justifyRight(oLayoutInfo.editable());
+      } else if (bCmd && bShift && keyCode === key.J) {
+        editor.justifyFull(oLayoutInfo.editable());
+      } else if (bCmd && bShift && keyCode === key.NUM7) {
+        editor.insertUnorderedList(oLayoutInfo.editable());
+      } else if (bCmd && bShift && keyCode === key.NUM8) {
+        editor.insertOrderedList(oLayoutInfo.editable());
+      } else if (bShift && keyCode === key.TAB) { // shift + tab
+        editor.outdent(oLayoutInfo.editable());
+      } else if (keyCode === key.TAB) { // tab
+        editor.indent(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.NUM0) { // formatBlock Paragraph
+        editor.formatBlock(oLayoutInfo.editable(), 'P');
+      } else if (bCmd && (key.NUM1 <= keyCode && keyCode <= key.NUM4)) {
+        var sHeading = 'H' + String.fromCharCode(keyCode); // H1~H4
+        editor.formatBlock(oLayoutInfo.editable(), sHeading);
       } else {
+        if (keyCode === key.BACKSPACE || keyCode === key.ENTER ||
+            keyCode === key.SPACE) {
+          editor.recordUndo(makeLayoutInfo(event.target).editable());
+        }
         return; // not matched
       }
       event.preventDefault(); //prevent default event for FF
@@ -720,21 +854,51 @@
       event.stopPropagation();
       event.preventDefault();
     };
-    
-    var hToolbarAndPopoverUpdate = function(event) {
-      var elEditableOrToolbar = event.currentTarget || event.target;
-      var welEditor = $(elEditableOrToolbar.parentNode);
-      
-      var oStyle = editor.currentStyle();
-      toolbar.update(welEditor.find('.note-toolbar'), oStyle);
-      popover.update(welEditor.find('.note-popover'), oStyle);
+
+    var hMousedown = function(event) {
+      //preventDefault Selection for FF, IE8+
+      if (dom.isImg(event.target)) { event.preventDefault(); };
     };
     
+    var hToolbarAndPopoverUpdate = function(event) {
+      var oLayoutInfo = makeLayoutInfo(event.currentTarget || event.target);
+      
+      var oStyle = editor.currentStyle(event.target);
+      if (!oStyle) { return; }
+      toolbar.update(oLayoutInfo.toolbar(), oStyle);
+      popover.update(oLayoutInfo.popover(), oStyle);
+      handle.update(oLayoutInfo.handle(), oStyle);
+    };
+
     var hScroll = function(event) {
-      var elEditableOrToolbar = event.currentTarget || event.target;
-      var welEditor = $(elEditableOrToolbar.parentNode);
-      //hide popover when scrolled
-      popover.hide(welEditor.find('.note-popover'));
+      var oLayoutInfo = makeLayoutInfo(event.currentTarget || event.target);
+      //hide popover and handle when scrolled
+      popover.hide(oLayoutInfo.popover());
+      handle.hide(oLayoutInfo.handle());
+    };
+
+    var hHandleMousedown = function(event) {
+      if (dom.isControlSizing(event.target)) {
+        var oLayoutInfo = makeLayoutInfo(event.target),
+            welHandle = oLayoutInfo.handle(), welPopover = oLayoutInfo.popover(),
+            welEditable = oLayoutInfo.editable(), welEditor = oLayoutInfo.editor();
+
+        var elTarget = welHandle.find('.note-control-selection').data('target');
+        var posStart = $(elTarget).offset(),
+            scrollTop = $(document).scrollTop(), posDistance;
+        welEditor.on('mousemove', function(event) {
+          posDistance = {x: event.clientX - posStart.left,
+                         y: event.clientY - (posStart.top - scrollTop)};
+          editor.resizeTo(posDistance, elTarget);
+          handle.update(welHandle, {image: elTarget});
+          popover.update(welPopover, {image: elTarget});
+        }).on('mouseup', function() {
+          welEditor.off('mousemove').off('mouseup');
+        });
+
+        editor.recordUndo(welEditable);
+        event.stopPropagation(); event.preventDefault();
+      }
     };
     
     var hToolbarAndPopoverMousedown = function(event) {
@@ -750,24 +914,32 @@
         var sEvent = welBtn.attr('data-event'),
             sValue = welBtn.attr('data-value');
 
-        var welNoteEditor = $(event.target).closest('.note-editor'),
-            welNoteDialog = welNoteEditor.find('.note-dialog'),
-            welNoteEditable = welNoteEditor.find('.note-editable');
+        var oLayoutInfo = makeLayoutInfo(event.target);
+        var welDialog = oLayoutInfo.dialog(),
+            welEditable = oLayoutInfo.editable();
 
-        if (editor[sEvent]) { // execute cmd
-          welNoteEditable.trigger('focus');
-          editor[sEvent](sValue);
+        // before command
+        var elTarget;
+        if ($.inArray(sEvent, ['resize', 'float']) !== -1) {
+          var welHandle = oLayoutInfo.handle();
+          var welSelection = welHandle.find('.note-control-selection');
+          elTarget = welSelection.data('target');
+        }
+
+        if (editor[sEvent]) { // on command
+          welEditable.trigger('focus');
+          editor[sEvent](welEditable, sValue, elTarget);
         }
         
-        // update recent color
+        // after command
         if ($.inArray(sEvent, ["backColor", "foreColor"]) !== -1) {
           toolbar.updateRecentColor(welBtn[0], sEvent, sValue);
         } else if (sEvent === "showLinkDialog") { // popover to dialog
-          editor.setLinkDialog(function(linkInfo, cb) {
-            dialog.showLinkDialog(welNoteDialog, linkInfo, cb);
+          editor.setLinkDialog(welEditable, function(linkInfo, cb) {
+            dialog.showLinkDialog(welDialog, linkInfo, cb);
           });
         } else if (sEvent === "showImageDialog") {
-          dialog.showImageDialog(welNoteDialog, hDropImage, insertImages);
+          dialog.showImageDialog(welDialog, hDropImage, insertImages);
         }
 
         hToolbarAndPopoverUpdate(event);
@@ -808,29 +980,33 @@
       welDimensionDisplay.html(dim.c + ' x ' + dim.r);
     };
 
-    this.attach = function(layoutInfo) {
-      layoutInfo.editable.on('keydown', hKeydown);
-      layoutInfo.editable.on('keyup mouseup', hToolbarAndPopoverUpdate);
-      layoutInfo.editable.on('scroll', hScroll);
+    this.attach = function(oLayoutInfo) {
+      oLayoutInfo.editable.on('keydown', hKeydown);
+      oLayoutInfo.editable.on('mousedown', hMousedown);
+      oLayoutInfo.editable.on('keyup mouseup', hToolbarAndPopoverUpdate);
+      oLayoutInfo.editable.on('scroll', hScroll);
       //TODO: handle Drag point
-      layoutInfo.editable.on('dragenter dragover dragleave', false);
-      layoutInfo.editable.on('drop', hDropImage);
+      oLayoutInfo.editable.on('dragenter dragover dragleave', false);
+      oLayoutInfo.editable.on('drop', hDropImage);
 
-      layoutInfo.toolbar.on('click', hToolbarAndPopoverClick);
-      layoutInfo.popover.on('click', hToolbarAndPopoverClick);
-      layoutInfo.toolbar.on('mousedown', hToolbarAndPopoverMousedown);
-      layoutInfo.popover.on('mousedown', hToolbarAndPopoverMousedown);
+      oLayoutInfo.handle.on('mousedown', hHandleMousedown);
+
+      oLayoutInfo.toolbar.on('click', hToolbarAndPopoverClick);
+      oLayoutInfo.popover.on('click', hToolbarAndPopoverClick);
+      oLayoutInfo.toolbar.on('mousedown', hToolbarAndPopoverMousedown);
+      oLayoutInfo.popover.on('mousedown', hToolbarAndPopoverMousedown);
       
       //toolbar table dimension
-      var welToolbar = layoutInfo.toolbar;
+      var welToolbar = oLayoutInfo.toolbar;
       var welCatcher = welToolbar.find('.note-dimension-picker-mousecatcher');
       welCatcher.on('mousemove', hDimensionPickerMove);
     };
 
-    this.dettach = function(layoutInfo) {
-      layoutInfo.editable.off();
-      layoutInfo.toolbar.off();
-      layoutInfo.popover.off();
+    this.dettach = function(oLayoutInfo) {
+      oLayoutInfo.editable.off();
+      oLayoutInfo.toolbar.off();
+      oLayoutInfo.handle.off();
+      oLayoutInfo.popover.off();
     };
   };
 
@@ -861,6 +1037,7 @@
                        '<ul class="dropdown-menu">' +
                          '<li><a data-event="formatBlock" data-value="p">Paragraph</a></li>' +
                          '<li><a data-event="formatBlock" data-value="blockquote"><blockquote>Quote</blockquote></a></li>' +
+                         '<li><a data-event="formatBlock" data-value="pre">Code</a></li>' +
                          '<li><a data-event="formatBlock" data-value="h1"><h1>Header 1</h1></a></li>' +
                          '<li><a data-event="formatBlock" data-value="h2"><h2>Header 2</h2></a></li>' +
                          '<li><a data-event="formatBlock" data-value="h3"><h3>Header 3</h3></a></li>' +
@@ -903,7 +1080,7 @@
                        '<button type="button" class="btn btn-small" title="Bold" data-shortcut="Ctrl+B" data-mac-shortcut="⌘+B" data-event="bold"><i class="icon-bold"></i></button>' +
                        '<button type="button" class="btn btn-small" title="Italic" data-shortcut="Ctrl+I" data-mac-shortcut="⌘+I" data-event="italic"><i class="icon-italic"></i></button>' +
                        '<button type="button" class="btn btn-small" title="Underline" data-shortcut="Ctrl+U" data-mac-shortcut="⌘+U" data-event="underline"><i class="icon-underline"></i></button>' +
-                       '<button type="button" class="btn btn-small" title="Remove Font Style" data-event="removeFormat"><i class="icon-eraser"></i></button>' +
+                       '<button type="button" class="btn btn-small" title="Remove Font Style" data-shortcut="Ctrl+\\" data-mac-shortcut="⌘+\\" data-event="removeFormat"><i class="icon-eraser"></i></button>' +
                      '</div>' +
                      '<div class="note-para btn-group">' +
                        '<button type="button" class="btn btn-small" title="Unordered list" data-shortcut="Ctrl+Shift+8" data-mac-shortcut="⌘+⇧+7" data-event="insertUnorderedList"><i class="icon-list-ul"></i></button>' +
@@ -945,12 +1122,39 @@
                        '<div class="popover-content note-link-content">' +
                          '<a href="http://www.google.com" target="_blank">www.google.com</a>&nbsp;&nbsp;' +
                          '<div class="note-insert btn-group">' +
-                           '<button type="button" class="btn btn-small" title="Edit" data-event="showLinkDialog"><i class="icon-edit"></i></button>' +
-                           '<button type="button" class="btn btn-small" title="Unlink" data-event="unlink"><i class="icon-unlink"></i></button>' +
+                         '<button type="button" class="btn btn-small" title="Edit" data-event="showLinkDialog"><i class="icon-edit"></i></button>' +
+                         '<button type="button" class="btn btn-small" title="Unlink" data-event="unlink"><i class="icon-unlink"></i></button>' +
+                         '</div>' +
+                       '</div>' +
+                     '</div>' +
+                     '<div class="note-image-popover popover fade bottom in" style="display: none;">' +
+                       '<div class="arrow"></div>' +
+                       '<div class="popover-content note-image-content">' +
+                         '<div class="btn-group">' +
+                           '<button type="button" class="btn btn-small" title="Resize Full" data-event="resize" data-value="1"><i class="icon-resize-full"></i></button>' +
+                           '<button type="button" class="btn btn-small" title="Resize Half" data-event="resize" data-value="0.5">½</button>' +
+                           '<button type="button" class="btn btn-small" title="Resize Thrid" data-event="resize" data-value="0.33">⅓</button>' +
+                           '<button type="button" class="btn btn-small" title="Resize Quarter" data-event="resize" data-value="0.25">¼</button>' +
+                         '</div>' +
+                         '<div class="btn-group">' +
+                           '<button type="button" class="btn btn-small" title="Float Left" data-event="float" data-value="left"><i class="icon-align-left"></i></button>' +
+                           '<button type="button" class="btn btn-small" title="Float Right" data-event="float" data-value="right"><i class="icon-align-right"></i></button>' +
+                           '<button type="button" class="btn btn-small" title="Float None" data-event="float" data-value="none"><i class="icon-reorder"></i></button>' +
                          '</div>' +
                        '</div>' +
                      '</div>' +
                    '</div>';
+
+    var sHandle = '<div class="note-handle">' +
+                    '<div class="note-control-selection">' +
+                      '<div class="note-control-selection-bg"></div>' +
+                      '<div class="note-control-holder note-control-nw"></div>' +
+                      '<div class="note-control-holder note-control-ne"></div>' +
+                      '<div class="note-control-holder note-control-sw"></div>' +
+                      '<div class="note-control-sizing note-control-se"></div>' +
+                    '</div>' +
+                  '</div>';
+
     var sDialog = '<div class="note-dialog">' +
                     '<div class="note-image-dialog modal hide in" aria-hidden="false">' +
                       '<div class="modal-header">' +
@@ -1043,6 +1247,7 @@
       if (nHeight) { welEditable.height(nHeight); }
 
       welEditable.html(welHolder.html());
+      welEditable.data('NoteHistory', new History());
       
       //03. create Toolbar
       var welToolbar = $(sToolbar).prependTo(welEditor);
@@ -1052,17 +1257,20 @@
       //04. create Popover
       var welPopover = $(sPopover).prependTo(welEditor);
       createTooltip(welPopover);
+
+      //05. handle(control selection, ...)
+      $(sHandle).prependTo(welEditor);
       
-      //05. create Dialog
-      var welDialog = $(sDialog).prependTo(welEditor);
+      //06. create Dialog
+      $(sDialog).prependTo(welEditor);
       
       //05. Editor/Holder switch
       welEditor.insertAfter(welHolder);
       welHolder.hide();
     };
     
-    // layoutInfo
-    var layoutInfo = this.layoutInfo = function(welHolder) {
+    // layoutInfoFromHolder
+    var layoutInfoFromHolder = this.layoutInfoFromHolder = function(welHolder) {
       var welEditor = welHolder.next();
       if (!welEditor.hasClass('note-editor')) { return; }
       
@@ -1071,13 +1279,14 @@
         editable: welEditor.find('.note-editable'),
         toolbar: welEditor.find('.note-toolbar'),
         popover: welEditor.find('.note-popover'),
+        handle: welEditor.find('.note-handle'),
         dialog: welEditor.find('.note-dialog')
-      }
+      };
     };
     
     // removeLayout
     var removeLayout = this.removeLayout = function(welHolder) {
-      var info = layoutInfo(welHolder);
+      var info = layoutInfoFromHolder(welHolder);
       if (!info) { return; }
       welHolder.html(info.editable.html());
       
@@ -1094,37 +1303,50 @@
    */
   $.fn.extend({
     // create Editor Layout and attach Key and Mouse Event
-    summernote : function(options) {
+    summernote: function(options) {
       options = options || {};
 
-      // createLayout
-      renderer.createLayout(this, options.height);
+      this.each(function(idx, elHolder) {
+        var welHolder = $(elHolder);
 
-      var info = renderer.layoutInfo(this);
-      eventHandler.attach(info);
+        // createLayout
+        renderer.createLayout(welHolder, options.height);
 
-      if (options.focus) { info.editable.focus(); } // options focus
+        var info = renderer.layoutInfoFromHolder(welHolder);
+        eventHandler.attach(info);
+
+        if (options.focus) { info.editable.focus(); } // options focus
+        if (options.blur) { info.editable.blur(options.blur); } // callback on blur
+      });
     },
     // get the HTML contents of note or set the HTML contents of note.
-    code : function(sHTML) {
-      var info = renderer.layoutInfo(this);
-
+    code: function(sHTML) {
       //get the HTML contents
       if (sHTML === undefined) {
-        return info.editable.html();
+        return this.map(function(idx, elHolder) {
+          var info = renderer.layoutInfoFromHolder($(elHolder));
+          return info.editable.html();
+        });
       }
 
       // set the HTML contents
-      info.editable.html(sHTML);
+      this.each(function(i, elHolder) {
+        var info = renderer.layoutInfoFromHolder($(elHolder));
+        info.editable.html(sHTML);
+      });
     },
-    // destory Editor Layout and dettach Key and Mouse Event
-    destory : function() {
-      var info = renderer.layoutInfo(this);
-      eventHandler.dettach(info);
-      renderer.removeLayout(this);
+    // destroy Editor Layout and dettach Key and Mouse Event
+    destroy: function() {
+      this.each(function(idx, elHolder) {
+        var welHolder = $(elHolder);
+
+        var info = renderer.layoutInfoFromHolder(welHolder);
+        eventHandler.dettach(info);
+        renderer.removeLayout(welHolder);
+      });
     },
     // inner object for test
-    summernoteInner : function() {
+    summernoteInner: function() {
       return { dom: dom, list: list, func: func };
     }
   });
