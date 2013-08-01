@@ -5,6 +5,9 @@ django-summernote
 
 `django-summernote` plugin allows you to embed Summernote into your Django admin page very handy.
 
+![django-summernote](https://raw.github.com/lqez/pastebin/master/img/django-summernote.png "Screenshot of django-summernote")
+
+
 
 SETUP
 -----
