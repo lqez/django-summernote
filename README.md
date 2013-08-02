@@ -45,7 +45,7 @@ USAGE
 
         # Apply summernote to specific fields.
         class SomeForm(forms.Form):
-            foo = forms.TextField(widget=SummernoteWidget())
+            foo = forms.CharField(widget=SummernoteWidget())  # instead of forms.Textarea
 
 
 OPTIONS
