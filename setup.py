@@ -1,6 +1,5 @@
 import os
 from setuptools import setup, find_packages
-
 from django_summernote import version, PROJECT
 
 
