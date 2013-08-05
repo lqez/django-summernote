@@ -33,19 +33,19 @@ USAGE
 
 In `admin.py`,
 
-        from django_summernote.admin import SummernoteModelAdmin
+    from django_summernote.admin import SummernoteModelAdmin
 
-        # Apply summernote to all TextField in model.
-        class SomeModelAdmin(SummernoteModelAdmin):  # instead of ModelAdmin
-            ...
+    # Apply summernote to all TextField in model.
+    class SomeModelAdmin(SummernoteModelAdmin):  # instead of ModelAdmin
+        ...
 
 Or, in `forms`,
 
-        from django_summernote.widgets import SummernoteWidget
+    from django_summernote.widgets import SummernoteWidget
 
-        # Apply summernote to specific fields.
-        class SomeForm(forms.Form):
-            foo = forms.CharField(widget=SummernoteWidget())  # instead of forms.Textarea
+    # Apply summernote to specific fields.
+    class SomeForm(forms.Form):
+        foo = forms.CharField(widget=SummernoteWidget())  # instead of forms.Textarea
 
 And don't forget to use it with `safe` filter in templates.
 
