@@ -20,6 +20,8 @@
     </body>
     <script>
         var src = window.parent.document.getElementById("{{ id }}");
+        $(src).hide(); // for IE
+
         $("#summernote").html(src.value);
         $("#summernote").summernote({
             height: 250,

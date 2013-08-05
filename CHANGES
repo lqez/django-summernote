@@ -1,3 +1,4 @@
+0.2.3 - Fix for Internet Explorer (issue #1)
 0.2.2 - Using non-responsive bootstrap css
 0.2.1 - Fix packaging problem
 0.2.0 - Apply Summernote v0.2
