@@ -31,7 +31,7 @@ SETUP
 USAGE
 -----
 
-1. In `admin.py`,
+In `admin.py`,
 
         from django_summernote.admin import SummernoteModelAdmin
 
@@ -39,13 +39,15 @@ USAGE
         class SomeModelAdmin(SummernoteModelAdmin):  # instead of ModelAdmin
             ...
 
-2. Or, in `forms`,
+Or, in `forms`,
 
         from django_summernote.widgets import SummernoteWidget
 
         # Apply summernote to specific fields.
         class SomeForm(forms.Form):
             foo = forms.CharField(widget=SummernoteWidget())  # instead of forms.Textarea
+
+And don't forget to use it with `safe` filter in templates.
 
 
 OPTIONS
