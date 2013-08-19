@@ -1,11 +1,3 @@
 html, body {
     margin: 0
 }
-
-.note-toolbar .note-insert .btn:first,
-.note-toolbar .note-fontsize,
-.note-toolbar .note-color,
-.note-toolbar .note-para .dropdown-menu li:first,
-.note-toolbar .note-line-height {
-    display: none;
-}
