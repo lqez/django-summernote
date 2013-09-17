@@ -19,24 +19,26 @@
         <div id="summernote"></div>
     </body>
     <script>
-        var src = window.parent.document.getElementById("{{ id }}");
-        $(src).hide(); // for IE
+    var src = window.parent.document.getElementById("{{ id }}");
+    var iframe = window.parent.document.getElementById("{{ id }}-iframe");
+    $(src).hide(); // for IE
 
-        $("#summernote").html(src.value);
-        $("#summernote").summernote({
-            height: $(document).height()-60,
-            toolbar: [
-                ['style', ['style']],
-                ['fontsize', ['fontsize']],
-                ['color', ['color']],
-                ['style', ['bold', 'italic', 'underline', 'clear']],
-                ['para', ['ul', 'ol', 'height']],
-                ['insert', ['link']],
-                ['help', ['help']]
-            ],
-            onblur: function() {
-                src.value = $("#summernote").code()[0];
-            }
-        });
+    $("#summernote").html(src.value);
+    $("#summernote").summernote({
+        height: $(document).height()-70,
+        toolbar: [
+            ['style', ['style']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'height']],
+            ['insert', ['link']],
+            ['help', ['help']]
+        ],
+        onblur: function() {
+            src.value = $("#summernote").code()[0];
+        }
+    });
+    $(".note-resizebar").hide();
     </script>
 </html>

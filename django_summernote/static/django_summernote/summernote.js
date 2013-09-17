@@ -14,12 +14,12 @@
    * func utils (for high-order func's arg)
    */
   var func = function() {
-    var eq = function(nodeA) {
-      return function(nodeB) { return nodeA === nodeB; };
-    };
-    var eq2 = function(nodeA, nodeB) { return nodeA === nodeB; };
+    var eq = function(elA) { return function(elB) { return elA === elB; }; };
+    var eq2 = function(elA, elB) { return elA === elB; };
     var fail = function() { return false; };
-    return { eq: eq, eq2: eq2, fail: fail };
+    var not = function(f) { return function() { return !f.apply(f, arguments); }};
+    var self = function(a) { return a; }
+    return { eq: eq, eq2: eq2, fail: fail, not: not, self: self };
   }();
   
   /**
@@ -30,6 +30,21 @@
     var last = function(array) { return array[array.length - 1]; };
     var initial = function(array) { return array.slice(0, array.length - 1); };
     var tail = function(array) { return array.slice(1); };
+
+    var sum = function(array, fn) {
+      fn = fn || func.self;
+      return array.reduce(function(memo, v) {
+        return memo + fn(v);
+      }, 0);
+    };
+
+    var from = function(collection) {
+      var result = [], idx = -1, length = collection.length;
+      while (++idx < length) {
+        result[idx] = collection[idx];
+      }
+      return result;
+    };
     
     var clusterBy = function(array, fn) {
       if (array.length === 0) { return []; }
@@ -54,7 +69,7 @@
     };
 
     return { head: head, last: last, initial: initial, tail: tail, 
-             compact: compact, clusterBy: clusterBy };
+             sum: sum, from: from, compact: compact, clusterBy: clusterBy };
   }();
   
   /**
@@ -116,18 +131,34 @@
     // FIXME: nodeA and nodeB must be sorted, use comparePoints later.
     var listBetween = function(nodeA, nodeB) {
       var aNode = [];
-      var elAncestor = commonAncestor(nodeA, nodeB);
-      //TODO: IE8, createNodeIterator
-      var iterator = document.createNodeIterator(elAncestor,
-                                                 NodeFilter.SHOW_ALL, null,
-                                                 false);
-      var node, bStart = false;
-      while (node = iterator.nextNode()) {
-        if (nodeA === node) { bStart = true; }
-        if (bStart) { aNode.push(node); }
-        if (nodeB === node) { break; }
+
+      var bStart = false, bEnd = false;
+      var fnWalk = function(node) {
+        if (!node) { return; } // traverse fisnish
+        if (node === nodeA) { bStart = true; } // start point
+        if (bStart && !bEnd) { aNode.push(node) } // between
+        if (node === nodeB) { bEnd = true; return; } // end point
+
+        for (var idx = 0, sz=node.childNodes.length; idx < sz; idx++) {
+          fnWalk(node.childNodes[idx]);
+        }
       }
+
+      fnWalk(commonAncestor(nodeA, nodeB)); // DFS with commonAcestor.
       return aNode;
+    };
+
+    // listPrev: listing prevSiblings (until predicate hit: optional)
+    var listPrev = function(node, pred) {
+      pred = pred || func.fail;      
+
+      var aNext = [];
+      while (node) {
+        aNext.push(node);
+        if (pred(node)) { break; }
+        node = node.previousSibling;
+      };
+      return aNext;
     };
     
     // listNext: listing nextSiblings (until predicate hit: optional)
@@ -137,7 +168,7 @@
       var aNext = [];
       while (node) {
         aNext.push(node);
-        if (node === pred) { break; }
+        if (pred(node)) { break; }
         node = node.nextSibling;
       };
       return aNext;
@@ -209,9 +240,7 @@
     // split: split dom tree by boundaryPoint(pivot and offset)
     var split = function(root, pivot, offset) {
       var aAncestor = listAncestor(pivot, func.eq(root));
-      if (aAncestor.length === 1) {
-        return splitData(pivot, offset);
-      }
+      if (aAncestor.length === 1) { return splitData(pivot, offset); }
       return aAncestor.reduce(function(node, parent) {
         var clone = parent.cloneNode(false);
         insertAfter(clone, parent);
@@ -232,7 +261,8 @@
       isB: makePredByNodeName('B'), isU: makePredByNodeName('U'),
       isS: makePredByNodeName('S'), isI: makePredByNodeName('I'),
       isImg: makePredByNodeName('IMG'),
-      ancestor: ancestor, listAncestor: listAncestor, listNext: listNext,
+      ancestor: ancestor, listAncestor: listAncestor,
+      listNext: listNext, listPrev: listPrev,
       commonAncestor: commonAncestor, listBetween: listBetween,
       insertAfter: insertAfter, position: position,
       makeOffsetPath: makeOffsetPath, fromOffsetPath: fromOffsetPath,
@@ -246,13 +276,101 @@
    * create Range Object From arguments or Browser Selection
    */
   var bW3CRangeSupport = !!document.createRange;
+
+  // return boundary point from TextRange(ie8)
+  // inspired by Andy Na's HuskyRange.js
+  var textRange2bp = function(textRange, bStart) {
+    var elCont = textRange.parentElement(), nOffset;
+
+    var tester = document.body.createTextRange(), elPrevCont;
+    var aChild = list.from(elCont.childNodes);
+    for (nOffset = 0; nOffset < aChild.length; nOffset++) {
+      if (dom.isText(aChild[nOffset])) { continue; }
+      tester.moveToElementText(aChild[nOffset]);
+      if (tester.compareEndPoints("StartToStart", textRange) >= 0) { break; }
+      elPrevCont = aChild[nOffset];
+    }
+
+    if (nOffset != 0 && dom.isText(aChild[nOffset - 1])) {
+      var textRangeStart = document.body.createTextRange(), elCurText = null;
+      textRangeStart.moveToElementText(elPrevCont || elCont);
+      textRangeStart.collapse(!elPrevCont);
+      elCurText = elPrevCont ? elPrevCont.nextSibling : elCont.firstChild;
+
+      var pointTester = textRange.duplicate();
+      pointTester.setEndPoint("StartToStart", textRangeStart);
+      var nTextCount = pointTester.text.replace(/[\r\n]/g, "").length;
+
+      while (nTextCount > elCurText.nodeValue.length && elCurText.nextSibling) {
+        nTextCount -= elCurText.nodeValue.length;
+        elCurText = elCurText.nextSibling;
+      }
+      var sDummy = elCurText.nodeValue; //enforce IE to re-reference elCurText
+
+      if (bStart && elCurText.nextSibling && dom.isText(elCurText.nextSibling) &&
+          nTextCount == elCurText.nodeValue.length) {
+        nTextCount -= elCurText.nodeValue.length;
+        elCurText = elCurText.nextSibling;
+      }
+
+      elCont = elCurText;
+      nOffset = nTextCount;
+    }
+
+    return {cont: elCont, offset: nOffset};
+  };
+
+  // return TextRange(ie8) from boundary point
+  // (inspired by google closure-library)
+  var bp2textRange = function(bp) {
+    var textRangeInfo = function(elCont, nOffset) {
+      var elNode, bCollapseToStart;
+
+      if (dom.isText(elCont)) {
+        var aPrevText = dom.listPrev(elCont, func.not(dom.isText));
+        var elPrevCont = list.last(aPrevText).previousSibling;
+        elNode =  elPrevCont || elCont.parentNode;
+        nOffset += list.sum(list.tail(aPrevText), dom.length);
+        bCollapseToStart = !elPrevCont;
+      } else {
+        elNode = elCont.childNodes[nOffset] || elCont;
+        if (dom.isText(elNode)) {
+          return textRangeInfo(elNode, nOffset);
+        }
+
+        nOffset = 0;
+        bCollapseToStart = false;
+      }
+
+      return {cont: elNode, collapseToStart: bCollapseToStart, offset: nOffset};
+    }
+
+    var textRange = document.body.createTextRange();
+    var info = textRangeInfo(bp.cont, bp.offset);
+
+    textRange.moveToElementText(info.cont);
+    textRange.collapse(info.collapseToStart);
+    textRange.moveStart("character", info.offset);
+    return textRange;
+  };
+
   var Range = function(sc, so, ec, eo) {
     if (arguments.length === 0) { // from Browser Selection
-      if (document.getSelection) { // webkit, firefox
+      if (bW3CRangeSupport) { // webkit, firefox
         var nativeRng = document.getSelection().getRangeAt(0);
         sc = nativeRng.startContainer, so = nativeRng.startOffset,
         ec = nativeRng.endContainer, eo = nativeRng.endOffset;
-      } // TODO: handle IE8+ TextRange
+      } else { //TextRange
+        var textRange = document.selection.createRange();
+        var textRangeEnd = textRange.duplicate(); textRangeEnd.collapse(false);
+        var textRangeStart = textRange; textRangeStart.collapse(true);
+
+        var bpStart = textRange2bp(textRangeStart, true),
+            bpEnd = textRange2bp(textRangeEnd, false);
+
+        sc = bpStart.cont, so = bpStart.offset;
+        ec = bpEnd.cont, eo = bpEnd.offset;
+      }
     }
     
     this.sc = sc; this.so = so;
@@ -265,7 +383,11 @@
         range.setStart(sc, so);
         range.setEnd(ec, eo);
         return range;
-      } // TODO: handle IE8+ TextRange
+      } else {
+        var textRange = bp2textRange({cont:sc, offset:so});
+        textRange.setEndPoint('EndToEnd', bp2textRange({cont:ec, offset:eo}));
+        return textRange;
+      }
     };
  
     // select: update visible range
@@ -275,7 +397,9 @@
         var selection = document.getSelection();
         if (selection.rangeCount > 0) { selection.removeAllRanges(); }
         selection.addRange(nativeRng);
-      } // TODO: handle IE8+ TextRange
+      } else {
+        nativeRng.select();
+      }
     };
     
     // listPara: listing paragraphs on range
@@ -309,25 +433,18 @@
       var nativeRng = nativeRange();
       if (bW3CRangeSupport) {
         nativeRng.insertNode(node);
-      } // TODO: IE8
-    };
-    
-    // surroundContents
-    this.surroundContents = function(sNodeName) {
-      var node = $('<' + sNodeName + ' />')[0];
-      var nativeRng = nativeRange();
-      if (bW3CRangeSupport) {
-        nativeRng.surroundContents(node);
-      } // TODO: IE8
-      
-      return node;
+      } else {
+        nativeRng.pasteHTML(node.outerHTML); // NOTE: missing node reference.
+      }
     };
 
     this.toString = function() {
       var nativeRng = nativeRange();
       if (bW3CRangeSupport) {
         return nativeRng.toString();
-      } // TODO: IE8
+      } else {
+        return nativeRng.text;
+      }
     };
 
     //bookmark: offsetPath bookmark
@@ -351,16 +468,6 @@
    * Style
    */
   var Style = function() {
-    // font level style
-    this.styleFont = function(rng, oStyle) {
-      //TODO: complete styleFont later only works for webkit
-      //rng.splitInline();
-      var elSpan = rng.surroundContents('span');
-      $.each(oStyle, function(sKey, sValue) {
-        elSpan.style[sKey] = sValue;
-      });
-    };
-    
     // para level style
     this.stylePara = function(rng, oStyle) {
       var aPara = rng.listPara();
@@ -374,16 +481,15 @@
     // get current style, elTarget: target element on event.
     this.current = function(rng, elTarget) {
       var welCont = $(dom.isText(rng.sc) ? rng.sc.parentNode : rng.sc);
-      var oStyle = welCont.css(['font-size', 'font-weight', 'font-style',
-                                'text-decoration', 'text-align',
+      var oStyle = welCont.css(['font-size', 'text-align',
                                 'list-style-type', 'line-height']) || {};
-                                     
+
       oStyle['font-size'] = parseInt(oStyle['font-size']);
 
-      // FF font-weight patch(number to 'bold' or 'normal')
-      if (!isNaN(parseInt(oStyle['font-weight']))) {
-        oStyle['font-weight'] = oStyle['font-weight'] > 400 ? 'bold' : 'normal';
-      }
+      // document.queryCommandState for toggle state
+      oStyle['font-bold'] = document.queryCommandState('bold') ? 'bold' : 'normal';
+      oStyle['font-italic'] = document.queryCommandState('italic') ? 'italic' : 'normal';
+      oStyle['font-underline'] = document.queryCommandState('underline') ? 'underline' : 'normal';
       
       // list-style-type to list-style(unordered, ordered)
       if (!rng.isOnList()) {
@@ -453,7 +559,7 @@
     //currentStyle
     var style = new Style();
     this.currentStyle = function(elTarget) {
-      if (document.getSelection().rangeCount == 0) { return null; }
+      if (document.getSelection && document.getSelection().rangeCount == 0) { return null; }
       return style.current((new Range()), elTarget);
     };
 
@@ -473,11 +579,11 @@
     };
 
     // native commands(with execCommand)
-    var aCmd = ['bold', 'italic', 'underline', 'justifyLeft', 'justifyCenter',
-                'justifyRight', 'justifyFull', 'insertOrderedList',
-                'insertUnorderedList', 'indent', 'outdent', 'formatBlock',
-                'removeFormat', 'backColor', 'foreColor', 'insertImage',
-                'insertHorizontalRule'];
+    var aCmd = ['bold', 'italic', 'underline', 'strikethrough',
+                'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
+                'insertOrderedList', 'insertUnorderedList',
+                'indent', 'outdent', 'formatBlock', 'removeFormat',
+                'backColor', 'foreColor', 'insertImage', 'insertHorizontalRule'];
     
     for (var idx = 0, len=aCmd.length; idx < len; idx ++) {
       this[aCmd[idx]] = function(sCmd) {
@@ -488,11 +594,9 @@
       }(aCmd[idx]);
     }
 
-    this.tab = function(welEditable) {
-      var rng = new Range();
-      if (rng.isOnList() || !rng.isCollapsed()) {
-        return this.indent(welEditable); // return is hack.
-      }
+    this.formatBlock = function(welEditable, sValue) {
+      sValue = bMSIE ? "<" + sValue + ">" : sValue;
+      document.execCommand("FormatBlock", false, sValue);
     };
 
     this.fontSize = function(welEditable, sValue) {
@@ -530,12 +634,21 @@
         text: rng.toString(),
         url: rng.isOnAnchor() ? dom.ancestor(rng.sc, dom.isAnchor).href : ""
       }, function(sLinkUrl) {
-        rng.select();
-        recordUndo(welEditable);
-        if (sLinkUrl.toLowerCase().indexOf("http://") !== 0) {
-          sLinkUrl = "http://" + sLinkUrl;
+        rng.select(); recordUndo(welEditable);
+
+        var bProtocol = sLinkUrl.toLowerCase().indexOf("://") !== -1;
+        var sLinkUrlWithProtocol = bProtocol ? sLinkUrl : "http://" + sLinkUrl;
+
+        //IE: createLink when range collapsed.
+        if (bMSIE && rng.isCollapsed()) {
+          rng.insertNode($('<A id="linkAnchor">' + sLinkUrl + '</A>')[0]);
+          var welAnchor = $('#linkAnchor').removeAttr("id")
+                                          .attr('href', sLinkUrlWithProtocol);
+          rng = new Range(welAnchor[0], 0, welAnchor[0], 1);
+          rng.select();
+        } else {
+          document.execCommand('createlink', false, sLinkUrlWithProtocol);
         }
-        document.execCommand('createlink', false, sLinkUrl);
       });
     };
     
@@ -602,7 +715,7 @@
       welFontsize.find('.note-current-fontsize').html(oStyle['font-size']);
       checkDropdownMenu(welFontsize, parseFloat(oStyle['font-size']));
       
-      var welLineHeight = welToolbar.find('.note-line-height');
+      var welLineHeight = welToolbar.find('.note-height');
       checkDropdownMenu(welLineHeight, parseFloat(oStyle['line-height']));
       
       //check button state
@@ -612,13 +725,13 @@
       };
 
       btnState('button[data-event="bold"]', function() {
-        return oStyle['font-weight'] === 'bold';
+        return oStyle['font-bold'] === 'bold';
       });
       btnState('button[data-event="italic"]', function() {
-        return oStyle['font-style'] === 'italic';
+        return oStyle['font-italic'] === 'italic';
       });
       btnState('button[data-event="underline"]', function() {
-        return oStyle['text-decoration'] === 'underline';
+        return oStyle['font-underline'] === 'underline';
       });
       btnState('button[data-event="justifyLeft"]', function() {
         return oStyle['text-align'] === 'left' || oStyle['text-align'] === 'start';
@@ -725,7 +838,7 @@
       var welDropzone = welDialog.find('.note-dropzone'),
           welImageInput = welDialog.find('.note-image-input');
 
-      welImageDialog.on('shown', function(e) {
+      welImageDialog.on('shown.bs.modal', function(e) {
         welDropzone.on('dragenter dragover dragleave', false);
         welDropzone.on('drop', function(e) {
           hDropImage(e); welImageDialog.modal('hide');
@@ -734,7 +847,7 @@
           fnInsertImages(this.files); $(this).val('');
           welImageDialog.modal('hide');
         });
-      }).on('hidden', function(e) {
+      }).on('hidden.bs.modal', function(e) {
         welDropzone.off('dragenter dragover dragleave drop');
         welImageInput.off('change');
       }).modal('show');
@@ -746,7 +859,7 @@
           welLinkUrl = welLinkDialog.find('.note-link-url'),
           welLinkBtn = welLinkDialog.find('.note-link-btn');
 
-      welLinkDialog.on('shown', function(e) {
+      welLinkDialog.on('shown.bs.modal', function(e) {
         welLinkText.html(linkInfo.text);
         welLinkUrl.val(linkInfo.url).keyup(function(event) {
           if (welLinkUrl.val()) {
@@ -762,9 +875,9 @@
           callback(welLinkUrl.val());
           event.preventDefault();
         });
-      }).on('hidden', function(e) {
+      }).on('hidden.bs.modal', function(e) {
         welLinkUrl.off('keyup');
-        welLinkDialog.off('shown hidden');
+        welLinkDialog.off('shown.bs.modal hidden.bs.modal');
         welLinkBtn.off('click');
       }).modal('show');
     };
@@ -786,16 +899,18 @@
     
     var key = { BACKSPACE: 8, TAB: 9, ENTER: 13, SPACE: 32,
                 NUM0: 48, NUM1: 49, NUM6: 54, NUM7: 55, NUM8: 56, 
-                B: 66, E: 69, I: 73, J: 74, K: 75, L: 76, R: 82,
-                U: 85, Y: 89, Z: 90, BACKSLACH: 220 };
+                B: 66, E: 69, I: 73, J: 74, K: 75, L: 76, R: 82, S: 83, U: 85,
+                Y: 89, Z: 90, SLASH: 191,
+                LEFTBRACKET: 219, BACKSLACH: 220, RIGHTBRACKET: 221 };
 
     // makeLayoutInfo from editor's descendant node.
     var makeLayoutInfo = function(descendant) {
       var welEditor = $(descendant).closest('.note-editor');
       return {
         editor: function() { return welEditor; },
-        editable: function() { return welEditor.find('.note-editable'); },
         toolbar: function() { return welEditor.find('.note-toolbar'); },
+        editable: function() { return welEditor.find('.note-editable'); },
+        statusbar: function() { return welEditor.find('.note-statusbar'); },
         popover: function() { return welEditor.find('.note-popover'); },
         handle: function() { return welEditor.find('.note-handle'); },
         dialog: function() { return welEditor.find('.note-dialog'); }
@@ -820,12 +935,16 @@
         editor.italic(oLayoutInfo.editable());
       } else if (bCmd && keyCode === key.U) {
         editor.underline(oLayoutInfo.editable());
+      } else if (bCmd && bShift && keyCode === key.S) {
+        editor.strikethrough(oLayoutInfo.editable());
       } else if (bCmd && keyCode === key.BACKSLACH) {
         editor.removeFormat(oLayoutInfo.editable());
       } else if (bCmd && keyCode === key.K) {
         editor.setLinkDialog(oLayoutInfo.editable(), function(linkInfo, cb) {
           dialog.showLinkDialog(oLayoutInfo.dialog(), linkInfo, cb);
         });
+      } else if (bCmd && keyCode === key.SLASH) {
+        dialog.showHelpDialog(oLayoutInfo.dialog());
       } else if (bCmd && bShift && keyCode === key.L) {
         editor.justifyLeft(oLayoutInfo.editable());
       } else if (bCmd && bShift && keyCode === key.E) {
@@ -838,10 +957,10 @@
         editor.insertUnorderedList(oLayoutInfo.editable());
       } else if (bCmd && bShift && keyCode === key.NUM8) {
         editor.insertOrderedList(oLayoutInfo.editable());
-      } else if (bShift && keyCode === key.TAB) { // shift + tab
+      } else if (bCmd && keyCode === key.LEFTBRACKET) {
         editor.outdent(oLayoutInfo.editable());
-      } else if (keyCode === key.TAB) { // tab
-        editor.tab(oLayoutInfo.editable());
+      } else if (bCmd && keyCode === key.RIGHTBRACKET) {
+        editor.indent(oLayoutInfo.editable());
       } else if (bCmd && keyCode === key.NUM0) { // formatBlock Paragraph
         editor.formatBlock(oLayoutInfo.editable(), 'P');
       } else if (bCmd && (key.NUM1 <= keyCode && keyCode <= key.NUM6)) {
@@ -860,6 +979,7 @@
     };
 
     var insertImages = function(welEditable, files) {
+      welEditable.trigger('focus');
       $.each(files, function(idx, file) {
         var fileReader = new FileReader;
         fileReader.onload = function(event) {
@@ -973,6 +1093,23 @@
         hToolbarAndPopoverUpdate(event);
       }
     };
+
+    var EDITABLE_PADDING = 24;
+    var hStatusbarMousedown = function(event) {
+      var welDocument = $(document);
+      var welEditable = makeLayoutInfo(event.target).editable();
+
+      var nEditableTop = welEditable.offset().top - welDocument.scrollTop();
+      var hMousemove = function(event) {
+        welEditable.height(event.clientY - (nEditableTop + EDITABLE_PADDING));
+      };
+      var hMouseup = function() {
+        welDocument.unbind('mousemove', hMousemove)
+                   .unbind('mouseup', hMouseup);
+      }
+      welDocument.mousemove(hMousemove).mouseup(hMouseup);
+      event.stopPropagation(); event.preventDefault();
+    };
     
     var PX_PER_EM = 18;
     var hDimensionPickerMove = function(event) {
@@ -997,11 +1134,11 @@
       welHighlighted.css({ width: dim.c +'em', height: dim.r + 'em' });
       welCatcher.attr('data-value', dim.c + 'x' + dim.r);
       
-      if (3 < dim.c && dim.c < 20) { // 5~20
+      if (3 < dim.c && dim.c < 10) { // 5~10
         welUnhighlighted.css({ width: dim.c + 1 + 'em'});
       }
 
-      if (3 < dim.r && dim.r < 20) { // 5~20
+      if (3 < dim.r && dim.r < 10) { // 5~10
         welUnhighlighted.css({ height: dim.r + 1 + 'em'});
       }
 
@@ -1023,6 +1160,8 @@
       oLayoutInfo.popover.on('click', hToolbarAndPopoverClick);
       oLayoutInfo.toolbar.on('mousedown', hToolbarAndPopoverMousedown);
       oLayoutInfo.popover.on('mousedown', hToolbarAndPopoverMousedown);
+
+      oLayoutInfo.statusbar.on('mousedown', hStatusbarMousedown);
       
       //toolbar table dimension
       var welToolbar = oLayoutInfo.toolbar;
@@ -1059,116 +1198,116 @@
    * rendering toolbar and editable
    */
   var Renderer = function() {
-    var sToolbarItems = {    
-                       'picture':
-                           '<button type="button" class="btn btn-small" title="Picture" data-event="showImageDialog" tabindex="-1"><i class="icon-picture"></i></button>',
-                       'link':
-                           '<button type="button" class="btn btn-small" title="Link" data-event="showLinkDialog" data-shortcut="Ctrl+K" data-mac-shortcut="⌘+K" tabindex="-1"><i class="icon-link"></i></button>',
-                       'table':
-                           '<button type="button" class="btn btn-small dropdown-toggle" title="Table" data-toggle="dropdown" tabindex="-1"><i class="icon-table"></i> <span class="caret"></span></button>' +
-                            '<ul class="dropdown-menu">' +
-                              '<div class="note-dimension-picker">' +
-                                '<div class="note-dimension-picker-mousecatcher" data-event="insertTable" data-value="1x1"></div>' +
-                                '<div class="note-dimension-picker-highlighted"></div>' +
-                                '<div class="note-dimension-picker-unhighlighted"></div>' +
-                              '</div>' +
-                              '<div class="note-dimension-display"> 1 x 1 </div>' +
-                            '</ul>',
-                       'style':
-                           '<button type="button" class="btn btn-small dropdown-toggle" title="Style" data-toggle="dropdown" tabindex="-1"><i class="icon-magic"></i> <span class="caret"></span></button>' +
-                           '<ul class="dropdown-menu">' +
-                             '<li><a data-event="formatBlock" data-value="p">Normal</a></li>' +
-                             '<li><a data-event="formatBlock" data-value="blockquote"><blockquote>Quote</blockquote></a></li>' +
-                             '<li><a data-event="formatBlock" data-value="pre">Code</a></li>' +
-                             '<li><a data-event="formatBlock" data-value="h1"><h1>Header 1</h1></a></li>' +
-                             '<li><a data-event="formatBlock" data-value="h2"><h2>Header 2</h2></a></li>' +
-                             '<li><a data-event="formatBlock" data-value="h3"><h3>Header 3</h3></a></li>' +
-                             '<li><a data-event="formatBlock" data-value="h4"><h4>Header 4</h4></a></li>' +
-                             '<li><a data-event="formatBlock" data-value="h5"><h5>Header 5</h5></a></li>' +
-                             '<li><a data-event="formatBlock" data-value="h6"><h6>Header 6</h6></a></li>' +
-                           '</ul>',
-                       'fontsize':
-                           '<button type="button" class="btn btn-small dropdown-toggle" data-toggle="dropdown" title="Font Size" tabindex="-1"><span class="note-current-fontsize">11</span> <b class="caret"></b></button>' +
-                           '<ul class="dropdown-menu">' +
-                             '<li><a data-event="fontSize" data-value="8"><i class="icon-ok"></i> 8</a></li>' +
-                             '<li><a data-event="fontSize" data-value="9"><i class="icon-ok"></i> 9</a></li>' +
-                             '<li><a data-event="fontSize" data-value="10"><i class="icon-ok"></i> 10</a></li>' +
-                             '<li><a data-event="fontSize" data-value="11"><i class="icon-ok"></i> 11</a></li>' +
-                             '<li><a data-event="fontSize" data-value="12"><i class="icon-ok"></i> 12</a></li>' +
-                             '<li><a data-event="fontSize" data-value="14"><i class="icon-ok"></i> 14</a></li>' +
-                             '<li><a data-event="fontSize" data-value="18"><i class="icon-ok"></i> 18</a></li>' +
-                             '<li><a data-event="fontSize" data-value="24"><i class="icon-ok"></i> 24</a></li>' +
-                             '<li><a data-event="fontSize" data-value="36"><i class="icon-ok"></i> 36</a></li>' +
-                           '</ul>',
-                       'color':
-                           '<button type="button" class="btn btn-small note-recent-color" title="Recent Color" data-event="color" data-value=\'{"foreColor":"black","backColor":"yellow"}\' tabindex="-1"><i class="icon-font" style="color:black;background-color:yellow;"></i></button>' +
-                           '<button type="button" class="btn btn-small dropdown-toggle" title="More Color" data-toggle="dropdown" tabindex="-1">' +
-                             '<span class="caret"></span>' +
-                           '</button>' +
-                           '<ul class="dropdown-menu">' +
-                             '<li>' +
-                               '<div class="btn-group">' +
-                                 '<div class="note-palette-title">BackColor</div>' +
-                                 '<div class="note-color-palette" data-target-event="backColor"></div>' +
-                               '</div>' +
-                               '<div class="btn-group">' +
-                                 '<div class="note-palette-title">FontColor</div>' +
-                                 '<div class="note-color-palette" data-target-event="foreColor"></div>' +
-                               '</div>' +
-                             '</li>' +
-                           '</ul>',
-                       'bold':
-                           '<button type="button" class="btn btn-small" title="Bold" data-shortcut="Ctrl+B" data-mac-shortcut="⌘+B" data-event="bold" tabindex="-1"><i class="icon-bold"></i></button>',
-                       'italic':
-                           '<button type="button" class="btn btn-small" title="Italic" data-shortcut="Ctrl+I" data-mac-shortcut="⌘+I" data-event="italic" tabindex="-1"><i class="icon-italic"></i></button>',
-                       'underline':
-                           '<button type="button" class="btn btn-small" title="Underline" data-shortcut="Ctrl+U" data-mac-shortcut="⌘+U" data-event="underline" tabindex="-1"><i class="icon-underline"></i></button>',
-                       'clear':
-                           '<button type="button" class="btn btn-small" title="Remove Font Style" data-shortcut="Ctrl+\\" data-mac-shortcut="⌘+\\" data-event="removeFormat" tabindex="-1"><i class="icon-eraser"></i></button>',
-                       'ul':
-                           '<button type="button" class="btn btn-small" title="Unordered list" data-shortcut="Ctrl+Shift+8" data-mac-shortcut="⌘+⇧+7" data-event="insertUnorderedList" tabindex="-1"><i class="icon-list-ul"></i></button>',
-                       'ol':
-                           '<button type="button" class="btn btn-small" title="Ordered list" data-shortcut="Ctrl+Shift+7" data-mac-shortcut="⌘+⇧+8" data-event="insertOrderedList" tabindex="-1"><i class="icon-list-ol"></i></button>',
-                       'paragraph':
-                           '<button type="button" class="btn btn-small dropdown-toggle" title="Paragraph" data-toggle="dropdown" tabindex="-1"><i class="icon-align-left"></i>  <span class="caret"></span></button>' +
-                           '<ul class="dropdown-menu right">' +
-                             '<li>' +
-                               '<div class="note-align btn-group">' +
-                                 '<button type="button" class="btn btn-small" title="Align left" data-shortcut="Ctrl+Shift+L" data-mac-shortcut="⌘+⇧+L" data-event="justifyLeft" tabindex="-1"><i class="icon-align-left"></i></button>' +
-                                 '<button type="button" class="btn btn-small" title="Align center" data-shortcut="Ctrl+Shift+E" data-mac-shortcut="⌘+⇧+E" data-event="justifyCenter" tabindex="-1"><i class="icon-align-center"></i></button>' +
-                                 '<button type="button" class="btn btn-small" title="Align right" data-shortcut="Ctrl+Shift+R" data-mac-shortcut="⌘+⇧+R" data-event="justifyRight" tabindex="-1"><i class="icon-align-right"></i></button>' +
-                                 '<button type="button" class="btn btn-small" title="Justify full" data-shortcut="Ctrl+Shift+J" data-mac-shortcut="⌘+⇧+J" data-event="justifyFull" tabindex="-1"><i class="icon-align-justify"></i></button>' +
-                               '</div>' +
-                             '</li>' +
-                             '<li>' +
-                               '<div class="note-list btn-group">' +
-                                 '<button type="button" class="btn btn-small" title="Outdent" data-shortcut="Shift+TAB" data-mac-shortcut="⇧+TAB" data-event="outdent" tabindex="-1"><i class="icon-indent-left"></i></button>' +
-                                 '<button type="button" class="btn btn-small" title="Indent" data-shortcut="TAB" data-mac-shortcut="TAB" data-event="indent" tabindex="-1"><i class="icon-indent-right"></i></button>' +
-                             '</li>' +
-                           '</ul>',
-                       'height':
-                           '<button type="button" class="btn btn-small dropdown-toggle" data-toggle="dropdown" title="Line Height" tabindex="-1"><i class="icon-text-height"></i>&nbsp; <b class="caret"></b></button>' +
-                           '<ul class="dropdown-menu right">' +
-                           '<li><a data-event="lineHeight" data-value="1.0"><i class="icon-ok"></i> 1.0</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="1.2"><i class="icon-ok"></i> 1.2</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="1.4"><i class="icon-ok"></i> 1.4</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="1.5"><i class="icon-ok"></i> 1.5</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="1.6"><i class="icon-ok"></i> 1.6</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="1.8"><i class="icon-ok"></i> 1.8</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="2.0"><i class="icon-ok"></i> 2.0</a></li>' +
-                           '<li><a data-event="lineHeight" data-value="3.0"><i class="icon-ok"></i> 3.0</a></li>' +
-                           '</ul>',
-                       'help':
-                           '<button type="button" class="btn btn-small" title="Help" data-event="showHelpDialog" tabindex="-1"><i class="icon-question"></i></button>'
-                    };
+    var aToolbarItem = {
+      picture:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Picture" data-event="showImageDialog" tabindex="-1"><i class="icon-picture"></i></button>',
+      link:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Link" data-event="showLinkDialog" data-shortcut="Ctrl+K" data-mac-shortcut="⌘+K" tabindex="-1"><i class="icon-link"></i></button>',
+      table:
+        '<button type="button" class="btn btn-default btn-sm btn-small dropdown-toggle" title="Table" data-toggle="dropdown" tabindex="-1"><i class="icon-table"></i> <span class="caret"></span></button>' +
+        '<ul class="dropdown-menu">' +
+        '<div class="note-dimension-picker">' +
+        '<div class="note-dimension-picker-mousecatcher" data-event="insertTable" data-value="1x1"></div>' +
+        '<div class="note-dimension-picker-highlighted"></div>' +
+        '<div class="note-dimension-picker-unhighlighted"></div>' +
+        '</div>' +
+        '<div class="note-dimension-display"> 1 x 1 </div>' +
+        '</ul>',
+      style:
+        '<button type="button" class="btn btn-default btn-sm btn-small dropdown-toggle" title="Style" data-toggle="dropdown" tabindex="-1"><i class="icon-magic"></i> <span class="caret"></span></button>' +
+        '<ul class="dropdown-menu">' +
+        '<li><a data-event="formatBlock" data-value="p">Normal</a></li>' +
+        '<li><a data-event="formatBlock" data-value="blockquote"><blockquote>Quote</blockquote></a></li>' +
+        '<li><a data-event="formatBlock" data-value="pre">Code</a></li>' +
+        '<li><a data-event="formatBlock" data-value="h1"><h1>Header 1</h1></a></li>' +
+        '<li><a data-event="formatBlock" data-value="h2"><h2>Header 2</h2></a></li>' +
+        '<li><a data-event="formatBlock" data-value="h3"><h3>Header 3</h3></a></li>' +
+        '<li><a data-event="formatBlock" data-value="h4"><h4>Header 4</h4></a></li>' +
+        '<li><a data-event="formatBlock" data-value="h5"><h5>Header 5</h5></a></li>' +
+        '<li><a data-event="formatBlock" data-value="h6"><h6>Header 6</h6></a></li>' +
+        '</ul>',
+      fontsize:
+        '<button type="button" class="btn btn-default btn-sm btn-small dropdown-toggle" data-toggle="dropdown" title="Font Size" tabindex="-1"><span class="note-current-fontsize">11</span> <b class="caret"></b></button>' +
+        '<ul class="dropdown-menu">' +
+        '<li><a data-event="fontSize" data-value="8"><i class="icon-ok"></i> 8</a></li>' +
+        '<li><a data-event="fontSize" data-value="9"><i class="icon-ok"></i> 9</a></li>' +
+        '<li><a data-event="fontSize" data-value="10"><i class="icon-ok"></i> 10</a></li>' +
+        '<li><a data-event="fontSize" data-value="11"><i class="icon-ok"></i> 11</a></li>' +
+        '<li><a data-event="fontSize" data-value="12"><i class="icon-ok"></i> 12</a></li>' +
+        '<li><a data-event="fontSize" data-value="14"><i class="icon-ok"></i> 14</a></li>' +
+        '<li><a data-event="fontSize" data-value="18"><i class="icon-ok"></i> 18</a></li>' +
+        '<li><a data-event="fontSize" data-value="24"><i class="icon-ok"></i> 24</a></li>' +
+        '<li><a data-event="fontSize" data-value="36"><i class="icon-ok"></i> 36</a></li>' +
+        '</ul>',
+      color:
+        '<button type="button" class="btn btn-default btn-sm btn-small note-recent-color" title="Recent Color" data-event="color" data-value=\'{"foreColor":"black","backColor":"yellow"}\' tabindex="-1"><i class="icon-font" style="color:black;background-color:yellow;"></i></button>' +
+        '<button type="button" class="btn btn-default btn-sm btn-small dropdown-toggle" title="More Color" data-toggle="dropdown" tabindex="-1">' +
+        '<span class="caret"></span>' +
+        '</button>' +
+        '<ul class="dropdown-menu">' +
+        '<li>' +
+        '<div class="btn-group">' +
+        '<div class="note-palette-title">BackColor</div>' +
+        '<div class="note-color-palette" data-target-event="backColor"></div>' +
+        '</div>' +
+        '<div class="btn-group">' +
+        '<div class="note-palette-title">FontColor</div>' +
+        '<div class="note-color-palette" data-target-event="foreColor"></div>' +
+        '</div>' +
+        '</li>' +
+        '</ul>',
+      bold:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Bold" data-shortcut="Ctrl+B" data-mac-shortcut="⌘+B" data-event="bold" tabindex="-1"><i class="icon-bold"></i></button>',
+      italic:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Italic" data-shortcut="Ctrl+I" data-mac-shortcut="⌘+I" data-event="italic" tabindex="-1"><i class="icon-italic"></i></button>',
+      underline:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Underline" data-shortcut="Ctrl+U" data-mac-shortcut="⌘+U" data-event="underline" tabindex="-1"><i class="icon-underline"></i></button>',
+      clear:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Remove Font Style" data-shortcut="Ctrl+\\" data-mac-shortcut="⌘+\\" data-event="removeFormat" tabindex="-1"><i class="icon-eraser"></i></button>',
+      ul:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Unordered list" data-shortcut="Ctrl+Shift+8" data-mac-shortcut="⌘+⇧+7" data-event="insertUnorderedList" tabindex="-1"><i class="icon-list-ul"></i></button>',
+      ol:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Ordered list" data-shortcut="Ctrl+Shift+7" data-mac-shortcut="⌘+⇧+8" data-event="insertOrderedList" tabindex="-1"><i class="icon-list-ol"></i></button>',
+      paragraph:
+        '<button type="button" class="btn btn-default btn-sm btn-small dropdown-toggle" title="Paragraph" data-toggle="dropdown" tabindex="-1"><i class="icon-align-left"></i>  <span class="caret"></span></button>' +
+        '<ul class="dropdown-menu">' +
+          '<li>' +
+          '<div class="note-align btn-group">' +
+          '<button type="button" class="btn btn-default btn-sm btn-small" title="Align left" data-shortcut="Ctrl+Shift+L" data-mac-shortcut="⌘+⇧+L" data-event="justifyLeft" tabindex="-1"><i class="icon-align-left"></i></button>' +
+          '<button type="button" class="btn btn-default btn-sm btn-small" title="Align center" data-shortcut="Ctrl+Shift+E" data-mac-shortcut="⌘+⇧+E" data-event="justifyCenter" tabindex="-1"><i class="icon-align-center"></i></button>' +
+          '<button type="button" class="btn btn-default btn-sm btn-small" title="Align right" data-shortcut="Ctrl+Shift+R" data-mac-shortcut="⌘+⇧+R" data-event="justifyRight" tabindex="-1"><i class="icon-align-right"></i></button>' +
+          '<button type="button" class="btn btn-default btn-sm btn-small" title="Justify full" data-shortcut="Ctrl+Shift+J" data-mac-shortcut="⌘+⇧+J" data-event="justifyFull" tabindex="-1"><i class="icon-align-justify"></i></button>' +
+          '</div>' +
+          '</li>' +
+          '<li>' +
+          '<div class="note-list btn-group">' +
+          '<button type="button" class="btn btn-default btn-sm btn-small" title="Outdent" data-shortcut="Ctrl+[" data-mac-shortcut="⌘+[" data-event="outdent" tabindex="-1"><i class="icon-indent-left"></i></button>' +
+          '<button type="button" class="btn btn-default btn-sm btn-small" title="Indent" data-shortcut="Ctrl+]" data-mac-shortcut="⌘+]" data-event="indent" tabindex="-1"><i class="icon-indent-right"></i></button>' +
+          '</li>' +
+        '</ul>',
+      height:
+        '<button type="button" class="btn btn-default btn-sm btn-small dropdown-toggle" data-toggle="dropdown" title="Line Height" tabindex="-1"><i class="icon-text-height"></i>&nbsp; <b class="caret"></b></button>' +
+        '<ul class="dropdown-menu">' +
+        '<li><a data-event="lineHeight" data-value="1.0"><i class="icon-ok"></i> 1.0</a></li>' +
+        '<li><a data-event="lineHeight" data-value="1.2"><i class="icon-ok"></i> 1.2</a></li>' +
+        '<li><a data-event="lineHeight" data-value="1.4"><i class="icon-ok"></i> 1.4</a></li>' +
+        '<li><a data-event="lineHeight" data-value="1.5"><i class="icon-ok"></i> 1.5</a></li>' +
+        '<li><a data-event="lineHeight" data-value="1.6"><i class="icon-ok"></i> 1.6</a></li>' +
+        '<li><a data-event="lineHeight" data-value="1.8"><i class="icon-ok"></i> 1.8</a></li>' +
+        '<li><a data-event="lineHeight" data-value="2.0"><i class="icon-ok"></i> 2.0</a></li>' +
+        '<li><a data-event="lineHeight" data-value="3.0"><i class="icon-ok"></i> 3.0</a></li>' +
+        '</ul>',
+      help:
+        '<button type="button" class="btn btn-default btn-sm btn-small" title="Help" data-shortcut="Ctrl+/" data-mac-shortcut="⌘+/" data-event="showHelpDialog" tabindex="-1"><i class="icon-question"></i></button>'
+    };
     var sPopover = '<div class="note-popover">' +
                      '<div class="note-link-popover popover fade bottom in" style="display: none;">' +
                        '<div class="arrow"></div>' +
                        '<div class="popover-content note-link-content">' +
                          '<a href="http://www.google.com" target="_blank">www.google.com</a>&nbsp;&nbsp;' +
                          '<div class="note-insert btn-group">' +
-                         '<button type="button" class="btn btn-small" title="Edit" data-event="showLinkDialog" tabindex="-1"><i class="icon-edit"></i></button>' +
-                         '<button type="button" class="btn btn-small" title="Unlink" data-event="unlink" tabindex="-1"><i class="icon-unlink"></i></button>' +
+                         '<button type="button" class="btn btn-default btn-sm btn-small" title="Edit" data-event="showLinkDialog" tabindex="-1"><i class="icon-edit"></i></button>' +
+                         '<button type="button" class="btn btn-default btn-sm btn-small" title="Unlink" data-event="unlink" tabindex="-1"><i class="icon-unlink"></i></button>' +
                          '</div>' +
                        '</div>' +
                      '</div>' +
@@ -1176,15 +1315,15 @@
                        '<div class="arrow"></div>' +
                        '<div class="popover-content note-image-content">' +
                          '<div class="btn-group">' +
-                           '<button type="button" class="btn btn-small" title="Resize Full" data-event="resize" data-value="1" tabindex="-1"><i class="icon-resize-full"></i></button>' +
-                           '<button type="button" class="btn btn-small" title="Resize Half" data-event="resize" data-value="0.5" tabindex="-1">½</button>' +
-                           '<button type="button" class="btn btn-small" title="Resize Thrid" data-event="resize" data-value="0.33" tabindex="-1">⅓</button>' +
-                           '<button type="button" class="btn btn-small" title="Resize Quarter" data-event="resize" data-value="0.25" tabindex="-1">¼</button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Resize Full" data-event="resize" data-value="1" tabindex="-1"><i class="icon-resize-full"></i></button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Resize Half" data-event="resize" data-value="0.5" tabindex="-1">½</button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Resize Thrid" data-event="resize" data-value="0.33" tabindex="-1">⅓</button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Resize Quarter" data-event="resize" data-value="0.25" tabindex="-1">¼</button>' +
                          '</div>' +
                          '<div class="btn-group">' +
-                           '<button type="button" class="btn btn-small" title="Float Left" data-event="float" data-value="left" tabindex="-1"><i class="icon-align-left"></i></button>' +
-                           '<button type="button" class="btn btn-small" title="Float Right" data-event="float" data-value="right" tabindex="-1"><i class="icon-align-right"></i></button>' +
-                           '<button type="button" class="btn btn-small" title="Float None" data-event="float" data-value="none" tabindex="-1"><i class="icon-reorder"></i></button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Float Left" data-event="float" data-value="left" tabindex="-1"><i class="icon-align-left"></i></button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Float Right" data-event="float" data-value="right" tabindex="-1"><i class="icon-align-right"></i></button>' +
+                           '<button type="button" class="btn btn-default btn-sm btn-small" title="Float None" data-event="float" data-value="none" tabindex="-1"><i class="icon-reorder"></i></button>' +
                          '</div>' +
                        '</div>' +
                      '</div>' +
@@ -1201,178 +1340,125 @@
                     '</div>' +
                   '</div>';
 
-    var sShortcutTable = '<table class="table table-hover table-striped table-bordered">' +
+    var sShortcutText = '<table class="note-shortcut">' +
                            '<thead>' +
-                             '<tr>' +
-                               '<th></th>' +
-                               '<th>Mac</th>' +
-                               '<th>Windows</th>' +
-                             '</tr>' +
+                             '<tr><th></th><th>Text formatting</th></tr>' +
                            '</thead>' +
                            '<tbody>' +
-                             '<tr>' +
-                               '<td>Undo</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">Z</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Z</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Redo</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">Z</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Y</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Indent</td>' +
-                               '<td><button class="btn btn-mini">Tab</button></td>' +
-                               '<td><button class="btn btn-mini">Tab</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Outdent</td>' +
-                               '<td><button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">Tab</button></td>' +
-                               '<td><button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">Tab</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Bold</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">B</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">B</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Italic</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">I</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">I</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Underline</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">U</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">U</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Remove Font Style</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">\\</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">\\</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Align Left</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">L</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">L</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Align Center</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">E</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">E</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Align Right</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">R</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">R</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Justify Full</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">J</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">J</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Ordered List</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">NUM7</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">NUM7</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Unordered List</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">⇧</button> + <button class="btn btn-mini">NUM8</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">Shift</button> + <button class="btn btn-mini">NUM8</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Normal Text</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">NUM0</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">NUM0</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Heading 1</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">NUM1</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">NUM1</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Heading 2</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">NUM2</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">NUM2</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Heading 3</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">NUM3</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">NUM3</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Heading 4</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">NUM4</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">NUM4</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Insert Link</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">K</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">K</button></td>' +
-                             '</tr>' +
-                             '<tr>' +
-                               '<td>Insert Horizontal Rule</td>' +
-                               '<td><button class="btn btn-mini">⌘</button> + <button class="btn btn-mini">ENTER</button></td>' +
-                               '<td><button class="btn btn-mini">Ctrl</button> + <button class="btn btn-mini">ENTER</button></td>' +
+                             '<tr><td>⌘ + B</td><td>Toggle Bold</td></tr>' +
+                             '<tr><td>⌘ + I</td><td>Toggle Italic</td></tr>' +
+                             '<tr><td>⌘ + U</td><td>Toggle Underline</td></tr>' +
+                             '<tr><td>⌘ + ⇧ + S</td><td>Toggle Strike</td></tr>' +
+                             '<tr><td>⌘ + \\</td><td>Remove Font Style</td></tr>' +
                              '</tr>' +
                            '</tbody>' +
-                           '</table>';
+                         '</table>';
+
+    var sShortcutAction = '<table class="note-shortcut">' +
+                           '<thead>' +
+                             '<tr><th></th><th>Action</th></tr>' +
+                           '</thead>' +
+                           '<tbody>' +
+                             '<tr><td>⌘ + Z</td><td>Undo</td></tr>' +
+                             '<tr><td>⌘ + ⇧ + Z</td><td>Redo</td></tr>' +
+                             '<tr><td>⌘ + ]</td><td>Indent</td></tr>' +
+                             '<tr><td>⌘ + [</td><td>Outdent</td></tr>' +
+                             '<tr><td>⌘ + K</td><td>Insert Link</td></tr>' +
+                             '<tr><td>⌘ + ENTER</td><td>Insert Horizontal Rule</td></tr>' +
+                           '</tbody>' +
+                         '</table>';
+
+    var sShortcutPara = '<table class="note-shortcut">' +
+                          '<thead>' +
+                            '<tr><th></th><th>Paragraph formatting</th></tr>' +
+                          '</thead>' +
+                          '<tbody>' +
+                            '<tr><td>⌘ + ⇧ + L</td><td>Align Left</td></tr>' +
+                            '<tr><td>⌘ + ⇧ + E</td><td>Align Center</td></tr>' +
+                            '<tr><td>⌘ + ⇧ + R</td><td>Align Right</td></tr>' +
+                            '<tr><td>⌘ + ⇧ + J</td><td>Justify Full</td></tr>' +
+                            '<tr><td>⌘ + ⇧ + NUM7</td><td>Ordered List</td></tr>' +
+                            '<tr><td>⌘ + ⇧ + NUM8</td><td>Unordered List</td></tr>' +
+                          '</tbody>' +
+                        '</table>';
+
+    var sShortcutStyle = '<table class="note-shortcut">' +
+                           '<thead>' +
+                             '<tr><th></th><th>Document Style</th></tr>' +
+                           '</thead>' +
+                           '<tbody>' +
+                             '<tr><td>⌘ + NUM0</td><td>Normal Text</td></tr>' +
+                             '<tr><td>⌘ + NUM1</td><td>Heading 1</td></tr>' +
+                             '<tr><td>⌘ + NUM2</td><td>Heading 2</td></tr>' +
+                             '<tr><td>⌘ + NUM3</td><td>Heading 3</td></tr>' +
+                             '<tr><td>⌘ + NUM4</td><td>Heading 4</td></tr>' +
+                             '<tr><td>⌘ + NUM5</td><td>Heading 5</td></tr>' +
+                             '<tr><td>⌘ + NUM6</td><td>Heading 6</td></tr>' +
+                           '</tbody>' +
+                         '</table>';
+
+    var sShortcutTable = '<table class="note-shortcut-layout">' +
+                           '<tbody>' +
+                             '<tr><td>' + sShortcutAction +'</td><td>' + sShortcutText +'</td></tr>' +
+                             '<tr><td>' + sShortcutStyle +'</td><td>' + sShortcutPara +'</td></tr>' +
+                           '</tbody>' +
+                         '</table>';
 
     var sDialog = '<div class="note-dialog">' +
-                    '<div class="note-image-dialog modal hide in" aria-hidden="false">' +
-                      '<div class="modal-header">' +
-                        '<button type="button" class="close" data-dismiss="modal" aria-hidden="true" tabindex="-1">×</button>' +
-                        '<h4>Insert Image</h4>' +
-                      '</div>' +
-                      '<div class="modal-body">' +
-                        '<div class="row-fluid">' +
-                          '<div class="note-dropzone span12">Drag an image here</div>' +
-                          '<div>or if you prefer...</div>' +
-                          '<input class="note-image-input" type="file" class="note-link-url" type="text" />' +
-                        '</div>' +
-                      '</div>' +
-                    '</div>' +
-                    '<div class="note-link-dialog modal hide in" aria-hidden="false">' +
-                      '<div class="modal-header">' +
-                        '<button type="button" class="close" data-dismiss="modal" aria-hidden="true" tabindex="-1">×</button>' +
-                        '<h4>Edit Link</h4>' +
-                      '</div>' +
-                      '<div class="modal-body">' +
-                        '<div class="row-fluid">' +
-                          '<label>Text to display</label>' +
-                          '<span class="note-link-text input-xlarge uneditable-input" />' +
-                          '<label>To what URL should this link go?</label>' +
-                          '<input class="note-link-url span12" type="text" />' +
-                        '</div>' +
-                      '</div>' +
-                      '<div class="modal-footer">' +
-                        '<a href="#" class="btn disabled note-link-btn" disabled="disabled">Link</a>' +
-                      '</div>' +
-                    '</div>' +
-                    '<div class="note-help-dialog modal hide in" aria-hidden="false">' +
-                      '<div class="modal-header">' +
-                        '<button type="button" class="close" data-dismiss="modal" aria-hidden="true" tabindex="-1">×</button>' +
-                        '<h4>Help</h4>' +
-                      '</div>' +
-                      '<div class="modal-body">' +
-                        '<div class="tabbable">' +
-                          '<ul class="nav nav-tabs">' +
-                            '<li class="active"><a href="#summernote-shortcut" data-toggle="tab"><i class="icon-keyboard"></i> Shortcut</a></li>' +
-                            '<li><a href="#summernote-about" data-toggle="tab"><i class="icon-question"></i> About</a></li>' +
-                          '</ul>' +
-                          '<div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">' +
-                            '<div class="tab-pane active" id="summernote-shortcut">' +
-                              sShortcutTable +
-                            '</div>' +
-                            '<div class="tab-pane" id="summernote-about">' +
-                                '<p class="text-center">Summernote v0.2 distributed under the MIT license.</p>' +
-                                '<p class="text-center"><a href="//hackerwins.github.io/summernote/" target="_blank">Home</a> · <a href="//github.com/HackerWins/summernote" target="_blank">GitHub Project</a> · <a href="//github.com/HackerWins/summernote/issues" target="_blank">Issues</a></p>' +
+                    '<div class="note-image-dialog modal" aria-hidden="false">' +
+                      '<div class="modal-dialog">' +
+                        '<div class="modal-content">' +
+                          '<div class="modal-header">' +
+                            '<button type="button" class="close" data-dismiss="modal" aria-hidden="true" tabindex="-1">×</button>' +
+                            '<h4>Insert Image</h4>' +
+                          '</div>' +
+                          '<div class="modal-body">' +
+                            '<div class="row-fluid">' +
+                              '<div class="note-dropzone span12">Drag an image here</div>' +
+                              '<div>or if you prefer...</div>' +
+                              '<input class="note-image-input" type="file" class="note-link-url" type="text" />' +
                             '</div>' +
                           '</div>' +
                         '</div>' +
                       '</div>' +
-                      '<div class="modal-footer">' +
-                        '<button class="btn" data-dismiss="modal" aria-hidden="true">Ok</button>' +
+                    '</div>' +
+                    '<div class="note-link-dialog modal" aria-hidden="false">' +
+                      '<div class="modal-dialog">' +
+                        '<div class="modal-content">' +
+                          '<div class="modal-header">' +
+                            '<button type="button" class="close" data-dismiss="modal" aria-hidden="true" tabindex="-1">×</button>' +
+                            '<h4>Edit Link</h4>' +
+                          '</div>' +
+                          '<div class="modal-body">' +
+                            '<div class="row-fluid">' +
+
+                            '<div class="form-group">' +
+                              '<label>Text to display</label>' +
+                              '<span class="note-link-text form-control input-xlarge uneditable-input" />' +
+                            '</div>' +
+                            '<div class="form-group">' +
+                              '<label>To what URL should this link go?</label>' +
+                              '<input class="note-link-url form-control span12" type="text" />' +
+                            '</div>' +
+                            '</div>' +
+                          '</div>' +
+                          '<div class="modal-footer">' +
+                            '<button href="#" class="btn btn-primary note-link-btn disabled" disabled="disabled">Link</button>' +
+                          '</div>' +
+                        '</div>' +
+                      '</div>' +
+                    '</div>' +
+                    '<div class="note-help-dialog modal fade" aria-hidden="false">' +
+                      '<div class="modal-dialog">' +
+                        '<div class="modal-content">' +
+                          '<div class="modal-body">' +
+                            '<div class="modal-background">' +
+                            '<a class="modal-close pull-right" data-dismiss="modal" aria-hidden="true" tabindex="-1">Close</a>' +
+                            '<div class="title">Keyboard shortcuts</div>' +
+                            sShortcutTable +
+                            '<p class="text-center"><a href="//hackerwins.github.io/summernote/" target="_blank">Summernote v0.3</a> · <a href="//github.com/HackerWins/summernote" target="_blank">Project</a> · <a href="//github.com/HackerWins/summernote/issues" target="_blank">Issues</a></p>' +
+                          '</div>' +
+                        '</div>' +
                       '</div>' +
                     '</div>' +
                   '</div>';
@@ -1424,14 +1510,19 @@
     };
     
     // createLayout
-    var createLayout = this.createLayout = function(welHolder, nHeight, nTabIndex, toolbarSettings) {
+    var createLayout = this.createLayout = function(welHolder, nHeight, nTabIndex, aToolbarSetting) {
       //already created
       if (welHolder.next().hasClass('note-editor')) { return; }
       
       //01. create Editor
       var welEditor = $('<div class="note-editor"></div>');
 
-      //02. create Editable
+      //02. statusbar
+      if (nHeight > 0) {
+        var welStatusbar = $('<div class="note-statusbar"><div class="note-resizebar"><div class="note-icon-bar"></div><div class="note-icon-bar"></div><div class="note-icon-bar"></div></div></div>').prependTo(welEditor);
+      }
+
+      //03. create Editable
       var welEditable = $('<div class="note-editable" contentEditable="true"></div>').prependTo(welEditor);
       if (nTabIndex) { welEditable.attr('tabIndex', nTabIndex); }
       if (nHeight) { welEditable.height(nHeight); }
@@ -1439,33 +1530,34 @@
       welEditable.html(welHolder.html());
       welEditable.data('NoteHistory', new History());
       
-      //03. create Toolbar
-      var toolbar = '<div class="note-toolbar btn-toolbar">';
-      for(var idx in toolbarSettings) {
-          var group = toolbarSettings[idx];
-          toolbar += '<div class="note-'+group[0]+' btn-group">';
-          for(var i in group[1]) {
-              toolbar += sToolbarItems[group[1][i]];
-          }
-          toolbar += '</div>';
+      //04. create Toolbar
+      var sToolbar = '';
+      for (var idx = 0, sz = aToolbarSetting.length; idx < sz; idx ++) {
+        var group = aToolbarSetting[idx];
+        sToolbar += '<div class="note-' + group[0] + ' btn-group">';
+        for (var i = 0, szGroup = group[1].length; i < szGroup; i++) {
+          sToolbar += aToolbarItem[group[1][i]];
+        }
+        sToolbar += '</div>';
       };
-      toolbar += '</div>';
 
-      var welToolbar = $(toolbar).prependTo(welEditor);
+      sToolbar = '<div class="note-toolbar btn-toolbar">' + sToolbar + '</div>';
+
+      var welToolbar = $(sToolbar).prependTo(welEditor);
       createPalette(welToolbar);
       createTooltip(welToolbar, 'bottom');
       
-      //04. create Popover
+      //05. create Popover
       var welPopover = $(sPopover).prependTo(welEditor);
       createTooltip(welPopover);
 
-      //05. handle(control selection, ...)
+      //06. handle(control selection, ...)
       $(sHandle).prependTo(welEditor);
       
-      //06. create Dialog
+      //07. create Dialog
       $(sDialog).prependTo(welEditor);
       
-      //05. Editor/Holder switch
+      //08. Editor/Holder switch
       welEditor.insertAfter(welHolder);
       welHolder.hide();
     };
@@ -1477,8 +1569,9 @@
       
       return {
         editor: welEditor,
-        editable: welEditor.find('.note-editable'),
         toolbar: welEditor.find('.note-toolbar'),
+        editable: welEditor.find('.note-editable'),
+        statusbar: welEditor.find('.note-statusbar'),
         popover: welEditor.find('.note-popover'),
         handle: welEditor.find('.note-handle'),
         dialog: welEditor.find('.note-dialog')
@@ -1506,18 +1599,18 @@
     // create Editor Layout and attach Key and Mouse Event
     summernote: function(options) {
       options = $.extend({
-            toolbar: [
-                ['insert', ['picture', 'link']],
-                ['table', ['table']],
-                ['style', ['style']],
-                ['fontsize', ['fontsize']],
-                ['color', ['color']],
-                ['style', ['bold', 'italic', 'underline', 'clear']],
-                ['para', ['ul', 'ol', 'align']],
-                ['height', ['height']],
-                ['help', ['help']]
-            ]
-          }, options );
+        toolbar: [
+          ['style', ['style']],
+          ['font', ['bold', 'italic', 'underline', 'clear']],
+          ['fontsize', ['fontsize']],
+          ['color', ['color']],
+          ['para', ['ul', 'ol', 'paragraph']],
+          ['height', ['height']],
+          ['table', ['table']],
+          ['insert', ['link', 'picture']],
+          ['help', ['help']]
+        ]
+      }, options );
 
       this.each(function(idx, elHolder) {
         var welHolder = $(elHolder);
@@ -1567,7 +1660,30 @@
     },
     // inner object for test
     summernoteInner: function() {
-      return { dom: dom, list: list, func: func };
+      return { dom: dom, list: list, func: func, Range: Range };
     }
   });
 })(jQuery); // jQuery
+
+//Array.prototype.reduce fallback
+//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce
+if ('function' !== typeof Array.prototype.reduce) {
+  Array.prototype.reduce = function(callback, opt_initialValue) {
+    'use strict';
+    var idx, value, length = this.length >>> 0, isValueSet = false;
+    if (1 < arguments.length) { value = opt_initialValue, isValueSet = true; }
+    for (idx = 0; length > idx; ++idx) {
+      if (this.hasOwnProperty(idx)) {
+        if (isValueSet) {
+          value = callback(value, this[idx], idx, this);
+        } else {
+          value = this[idx], isValueSet = true;
+        }
+      }
+    }
+    if (!isValueSet) {
+      throw new TypeError('Reduce of empty array with no initial value');
+    }
+    return value;
+  };
+}
