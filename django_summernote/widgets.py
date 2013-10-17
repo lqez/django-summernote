@@ -15,8 +15,8 @@ class SummernoteWidget(forms.Textarea):
         final_attrs = self.build_attrs(attrs)
         del final_attrs['id']
 
-        url = reverse_lazy('django_summernote-editor', args=(attrs['id'],))
-        html += '<iframe id="%s-iframe" src="%s" width="720" height="320" frameborder="0"%s></iframe>' \
+        url = reverse_lazy('django_summernote-editor', kwargs={'id': attrs['id']})
+        html += '<iframe id="%s-iframe" src="%s" width="720" height="480" frameborder="0"%s></iframe>' \
             % (attrs['id'], url, flatatt(final_attrs))
 
         return mark_safe(html)
