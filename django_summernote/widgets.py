@@ -2,6 +2,7 @@ from django import forms
 from django.core.urlresolvers import reverse_lazy
 from django.utils.safestring import mark_safe
 from django.forms.util import flatatt
+from django_summernote.settings import summernote_config
 
 
 class SummernoteWidget(forms.Textarea):
@@ -16,7 +17,7 @@ class SummernoteWidget(forms.Textarea):
         del final_attrs['id']
 
         url = reverse_lazy('django_summernote-editor', kwargs={'id': attrs['id']})
-        html += '<iframe id="%s-iframe" src="%s" width="720" height="480" frameborder="0"%s></iframe>' \
-            % (attrs['id'], url, flatatt(final_attrs))
+        html += '<iframe id="%s-iframe" src="%s" width="%d" height="%d" frameborder="0"%s></iframe>' \
+            % (attrs['id'], url, summernote_config['width'], summernote_config['height'], flatatt(final_attrs))
 
         return mark_safe(html)
