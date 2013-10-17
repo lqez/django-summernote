@@ -53,7 +53,23 @@ And don't forget to use it with `safe` filter in templates.
 OPTIONS
 -------
 
-(under development)
+Support customization via settings.
+Put `SUMMERNOTE_CONFIG` into your settings file.
+
+In settings.py, 
+
+    SUMMERNOTE_CONFIG = {
+        'width': '100%',
+        'height': '480',
+        'toolbar': [
+            ['style', ['style']],
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'height']],
+            ['insert', ['link']],
+        ],
+    }
+
+About toolbar customization, please refer [Summernote document](http://hackerwins.github.io/summernote/features.html#customtoolbar).
 
 
 AUTHOR
