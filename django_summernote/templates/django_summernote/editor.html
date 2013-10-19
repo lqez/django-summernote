@@ -9,7 +9,7 @@
         <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
 
         <!-- include summernote css/js -->
-        <script src="{{ STATIC_URL }}django_summernote/summernote.js"></script>
+        <script src="{{ STATIC_URL }}django_summernote/summernote.min.js"></script>
         <link href="{{ STATIC_URL }}django_summernote/summernote.css" rel="stylesheet">
 
         <!-- include django-summernote -->
@@ -28,7 +28,7 @@
         height: $(document).height()-70,
         toolbar: {{ toolbar|safe }},
         onblur: function() {
-            src.value = $("#summernote").code()[0];
+            src.value = $("#summernote").code();
         }
     });
     $(".note-resizebar").hide();
