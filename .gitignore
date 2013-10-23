@@ -35,3 +35,8 @@ nosetests.xml
 .pydevproject
 
 .ropeproject
+
+# django-setuptest
+coverage.xml
+pep8.txt
+

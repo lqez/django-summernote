@@ -20,7 +20,8 @@ CLASSIFIERS = [
 for directory in ['static', 'templates']:
     for root, dirs, files in os.walk(os.path.join(MODULE_NAME, directory)):
         for filename in files:
-            PACKAGE_DATA.append("%s/%s" % (root[len(MODULE_NAME) + 1:], filename))
+            PACKAGE_DATA.append("%s/%s" % (root[len(MODULE_NAME) + 1:],
+                                           filename))
 
 
 setup(
@@ -38,4 +39,9 @@ setup(
 
     description='Summernote plugin for Django',
     classifiers=CLASSIFIERS,
+
+    py_modules=['django_summernote'],
+    install_requires=['django'],
+    tests_require=['django-setuptest'],
+    test_suite='setuptest.setuptest.SetupTestSuite',
 )
