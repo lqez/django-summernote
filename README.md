@@ -1,5 +1,6 @@
 django-summernote
 =================
+[![Build Status](https://travis-ci.org/lqez/django-summernote.png?branch=master)](https://travis-ci.org/lqez/django-summernote)
 
 [Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor based on Twitter's Bootstrap.
 
