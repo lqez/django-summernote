@@ -42,6 +42,6 @@ setup(
 
     py_modules=['django_summernote'],
     install_requires=['django'],
-    tests_require=['django-setuptest'],
+    tests_require=['argparse', 'django-setuptest'],
     test_suite='setuptest.setuptest.SetupTestSuite',
 )
