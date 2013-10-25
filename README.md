@@ -29,6 +29,11 @@ SETUP
             ...
         )
 
+4. Run `syncdb` for preparing attachment model.
+
+        python manage.py syncdb 
+        
+
 USAGE
 -----
 
