@@ -1,0 +1,10 @@
+{"files": [
+{% for attachment in attachments %}
+    {
+        "name": "{{ attachment.name }}",
+        "size": {{ attachment.file.size }},
+        "url": "{{ attachment.file.url }}"
+    }
+    {% if not forloop.last %},{% endif %}
+{% endfor %}
+]}

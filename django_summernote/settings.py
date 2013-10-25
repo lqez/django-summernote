@@ -1,4 +1,16 @@
+import os
+import uuid
+from datetime import datetime
+from django.core.files.storage import default_storage
 from django.conf import settings
+
+
+def uploaded_filepath(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    today = datetime.now().strftime('%Y-%m-%d')
+    return os.path.join('django-summernote', today, filename)
+
 
 SETTINGS_USER = getattr(settings, 'SUMMERNOTE_CONFIG', {})
 SETTINGS_DEFAULT = {
@@ -13,6 +25,9 @@ SETTINGS_DEFAULT = {
         ['insert', ['link', 'picture']],
         ['help', ['help']],
     ],
+    'attachment_upload_to': uploaded_filepath,
+    'attachment_storage': default_storage,
+    'attachment_filesize_limit': 1024 * 1024,
 }
 
 summernote_config = dict(SETTINGS_DEFAULT.items() + SETTINGS_USER.items())

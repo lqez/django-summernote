@@ -72,6 +72,7 @@ In settings.py,
 
 About toolbar customization, please refer [Summernote document](http://hackerwins.github.io/summernote/features.html#customtoolbar).
 
+(TODO) Document for addtional settings will be added, soon. :^`D
 
 AUTHOR
 ------
@@ -82,4 +83,8 @@ Park Hyunwoo([@lqez](https://twitter.com/lqez))
 LICENSE
 -------
 
-Distributed under MIT license.
+`django-summernote` is distributed under MIT license.
+
+And also uses below libraries.
+
+  - jQuery File Upload : http://blueimp.github.io/jQuery-File-Upload/
