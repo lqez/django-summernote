@@ -1550,8 +1550,8 @@
                           '</div>' +
                           '<div class="modal-body">' +
                             '<div class="row-fluid">' +
-                              '<div class="note-dropzone span12">Drag an image here</div>' +
-                              '<div>or if you prefer...</div>' +
+//                              '<div class="note-dropzone span12">Drag an image here</div>' +
+//                              '<div>or if you prefer...</div>' +
                               '<input class="note-image-input" type="file" class="note-link-url" name="files" multiple/>' +
                             '</div>' +
                           '</div>' +
