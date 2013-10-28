@@ -85,6 +85,11 @@ AUTHOR
 Park Hyunwoo([@lqez](https://twitter.com/lqez))
 
 
+THANKS TO
+---------
+
+  - [jaeyoung](https://github.com/jeyraof) : Debugging on Django 1.4
+
 LICENSE
 -------
 
