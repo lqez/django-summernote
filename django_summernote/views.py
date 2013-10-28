@@ -13,26 +13,28 @@ def editor(request, id):
 
 
 def upload_attachment(request):
-    if request.method == 'POST' and request.FILES.get('files'):
-        try:
-            attachments = []
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Only POST method is allowed')
 
-            for file in request.FILES.getlist('files'):
-                attachment = Attachment()
-                attachment.file = file
-                attachment.name = file.name
+    if not request.FILES.getlist('files'):
+        return HttpResponseBadRequest('No files were requested')
 
-                if file.size > summernote_config['attachment_filesize_limit']:
-                    return HttpResponseBadRequest('File size exceeds the limit allowed and cannot be saved')
+    try:
+        attachments = []
 
-                attachment.save()
-                attachments.append(attachment)
+        for file in request.FILES.getlist('files'):
+            attachment = Attachment()
+            attachment.file = file
+            attachment.name = file.name
 
-            return render(request, 'django_summernote/upload_attachment.json', {
-                'attachments': attachments,
-            })
-        except IOError:
-            return HttpResponseServerError('Failed to save attachment')
+            if file.size > summernote_config['attachment_filesize_limit']:
+                return HttpResponseBadRequest('File size exceeds the limit allowed and cannot be saved')
 
-    else:
-        return HttpResponseBadRequest('Not a valid request')
+            attachment.save()
+            attachments.append(attachment)
+
+        return render(request, 'django_summernote/upload_attachment.json', {
+            'attachments': attachments,
+        })
+    except IOError:
+        return HttpResponseServerError('Failed to save attachment')
