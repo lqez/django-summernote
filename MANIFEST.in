@@ -1,2 +1,6 @@
 recursive-include django_summernote *
-exclude *.pyc
+
+global-exclude *.so
+global-exclude *.pyd
+global-exclude *.pyc
+global-exclude .git*
