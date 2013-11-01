@@ -1,7 +1,6 @@
 import os
 import uuid
 from datetime import datetime
-from django.core.files.storage import default_storage
 from django.conf import settings
 
 
@@ -26,7 +25,7 @@ SETTINGS_DEFAULT = {
         ['help', ['help']],
     ],
     'attachment_upload_to': uploaded_filepath,
-    'attachment_storage': default_storage,
+    'attachment_storage': None,
     'attachment_filesize_limit': 1024 * 1024,
 }
 
