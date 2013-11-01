@@ -77,6 +77,12 @@ In settings.py,
 
 About toolbar customization, please refer [Summernote document](http://hackerwins.github.io/summernote/features.html#customtoolbar).
 
+Or, you can styling editor via attributes of the widget.
+
+    # Apply adhoc style via attibutes
+    class SomeForm(forms.Form):
+        foo = forms.CharField(widget=SummernoteWidget(attrs={'width': '50%', 'height': '400px'}))
+
 (TODO) Document for addtional settings will be added, soon. :^`D
 
 AUTHOR
