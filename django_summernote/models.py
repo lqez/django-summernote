@@ -6,7 +6,7 @@ from django_summernote.settings import summernote_config
 __all__ = ['Attachment', ]
 
 
-def _get_attachment_storage(self):
+def _get_attachment_storage():
     if summernote_config['attachment_storage']:
         return summernote_config['attachment_storage']()
     else:
