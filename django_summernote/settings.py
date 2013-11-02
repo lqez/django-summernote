@@ -25,7 +25,7 @@ SETTINGS_DEFAULT = {
         ['help', ['help']],
     ],
     'attachment_upload_to': uploaded_filepath,
-    'attachment_storage': None,
+    'attachment_storage_class': None,
     'attachment_filesize_limit': 1024 * 1024,
 }
 

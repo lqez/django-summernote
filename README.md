@@ -65,19 +65,28 @@ Put `SUMMERNOTE_CONFIG` into your settings file.
 In settings.py, 
 
     SUMMERNOTE_CONFIG = {
+        # Change editor size
         'width': '100%',
         'height': '480',
+
+        # Customize toolbar buttons
         'toolbar': [
             ['style', ['style']],
             ['style', ['bold', 'italic', 'underline', 'clear']],
             ['para', ['ul', 'ol', 'height']],
             ['insert', ['link']],
         ],
+
+        # Set `upload_to` function for attachments.
+        'attachment_upload_to': my_custom_upload_to_func(),
+
+        # Set custom storage class for attachments.
+        'attachment_storage_class': 'my.custom.storage.class.name',
     }
 
 About toolbar customization, please refer [Summernote document](http://hackerwins.github.io/summernote/features.html#customtoolbar).
 
-Or, you can styling editor via attributes of the widget.
+Or, you can styling editor via attributes of the widget. These adhoc styling will override settings from `SUMMERNOTE_CONFIG`.
 
     # Apply adhoc style via attibutes
     class SomeForm(forms.Form):
@@ -95,6 +104,7 @@ THANKS TO
 ---------
 
   - [jaeyoung](https://github.com/jeyraof) : Debugging on Django 1.4
+  - [kroisse](https://github.com/kroisse) : Fixing problem on importing module
 
 LICENSE
 -------

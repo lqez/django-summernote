@@ -1,3 +1,4 @@
+0.3.9 - Use a string type 'attachment_storage_class' to pass custom storage class
 0.3.8 - Change the type of 'attachment_storage' to class, not an instance
 0.3.7 - Fix overriding editor style via widget attributes
 0.3.6 - Support image dropzone and insert an image via url
