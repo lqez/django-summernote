@@ -17,12 +17,14 @@ SETTINGS_DEFAULT = {
     'height': 480,
     'toolbar': [
         ['style', ['style']],
+        ['font', ['bold', 'italic', 'underline', 'clear']],
         ['fontsize', ['fontsize']],
         ['color', ['color']],
-        ['style', ['bold', 'italic', 'underline', 'clear']],
-        ['para', ['ul', 'ol', 'height']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['height', ['height']],
+        ['table', ['table']],
         ['insert', ['link', 'picture']],
-        ['help', ['help']],
+        ['misc', ['codeview', 'help']]
     ],
     'attachment_upload_to': uploaded_filepath,
     'attachment_storage_class': None,

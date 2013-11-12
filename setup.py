@@ -11,7 +11,7 @@ CLASSIFIERS = [
     'Topic :: Software Development :: Libraries :: Python Modules',
     'Environment :: Web Environment',
     'Framework :: Django',
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
     'Programming Language :: Python',
     'License :: OSI Approved :: MIT License',
