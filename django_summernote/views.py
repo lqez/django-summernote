@@ -1,7 +1,7 @@
+import json
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render
-from django.utils import simplejson
 from django_summernote.models import Attachment
 from django_summernote.settings import summernote_config
 
@@ -9,7 +9,7 @@ from django_summernote.settings import summernote_config
 def editor(request, id):
     return render(request, 'django_summernote/editor.html', {
         'id': id,
-        'toolbar': simplejson.dumps(summernote_config['toolbar']),
+        'toolbar': json.dumps(summernote_config['toolbar']),
         'url': {
             'upload_attachment': reverse_lazy('django_summernote-upload_attachment'),
         },
