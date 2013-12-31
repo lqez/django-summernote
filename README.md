@@ -69,6 +69,9 @@ In settings.py,
         'width': '100%',
         'height': '480',
 
+        # Set editor language/locale
+        'lang': 'en-US',
+
         # Customize toolbar buttons
         'toolbar': [
             ['style', ['style']],
@@ -84,7 +87,8 @@ In settings.py,
         'attachment_storage_class': 'my.custom.storage.class.name',
     }
 
-About toolbar customization, please refer [Summernote document](http://hackerwins.github.io/summernote/features.html#customtoolbar).
+  - About language/locale: [Summernote i18n section](http://hackerwins.github.io/summernote/features.html#i18n-language)
+  - About toolbar customization, please refer [Summernote toolbar section](http://hackerwins.github.io/summernote/features.html#customtoolbar).
 
 Or, you can styling editor via attributes of the widget. These adhoc styling will override settings from `SUMMERNOTE_CONFIG`.
 

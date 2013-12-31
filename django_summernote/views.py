@@ -10,6 +10,7 @@ def editor(request, id):
     return render(request, 'django_summernote/editor.html', {
         'id': id,
         'toolbar': json.dumps(summernote_config['toolbar']),
+        'lang': summernote_config['lang'],
         'url': {
             'upload_attachment': reverse_lazy('django_summernote-upload_attachment'),
         },

@@ -11,6 +11,10 @@
         <!-- include summernote css/js -->
         <script src="{{ STATIC_URL }}django_summernote/summernote.min.js"></script>
         <link href="{{ STATIC_URL }}django_summernote/summernote.css" rel="stylesheet">
+        {% if lang != 'en-US' %}
+        <!-- include summernote language pack -->
+        <script src="{{ STATIC_URL }}django_summernote/lang/summernote-{{ lang }}.js"></script>
+        {% endif %}
 
         <!-- include jQuery File Upload js -->
         <script src="{{ STATIC_URL }}django_summernote/jquery.ui.widget.js"></script>
@@ -34,6 +38,7 @@
     $('#summernote').summernote({
         height: $(document).height()-70,
         toolbar: {{ toolbar|safe }},
+        lang: '{{ lang }}',
         onblur: function() {
             src.value = $("#summernote").code();
         },
