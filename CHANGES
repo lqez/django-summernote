@@ -1,3 +1,5 @@
+0.5.0 - Update Summernote v0.5.0
+0.4.2 - Replace deprecated packages on Django 1.6
 0.4.1 - Update Summernote v0.4.1
 0.3.9 - Use a string type 'attachment_storage_class' to pass custom storage class
 0.3.8 - Change the type of 'attachment_storage' to class, not an instance
