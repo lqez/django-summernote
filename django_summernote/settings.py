@@ -33,4 +33,5 @@ SETTINGS_DEFAULT = {
     'attachment_filesize_limit': 1024 * 1024,
 }
 
-summernote_config = dict(SETTINGS_DEFAULT.items() + SETTINGS_USER.items())
+summernote_config = SETTINGS_DEFAULT.copy()
+summernote_config.update(SETTINGS_USER)
