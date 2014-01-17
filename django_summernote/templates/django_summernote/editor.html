@@ -40,12 +40,17 @@
         toolbar: {{ toolbar|safe }},
         lang: '{{ lang }}',
         oninit: function() {
-            var toolbar = $('.note-toolbar');
-            var editable = $('.note-editable');
-            var setHeight = editable.height() - toolbar.height() - 2*(editable.innerHeight() - editable.height());
-            // editor_height - (toolbar_height + padding_top + padding_bottom)
+            var nEditor = $('.note-editor');
+            var nToolbar = $('.note-toolbar');
+            var nEditable = $('.note-editable');
+            var setHeight = parseInt(
+                                        {{ height }}  // default
+                                        - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                                        - (nEditable.innerHeight() - nEditable.height())  // editable's padding
+                                        - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
+                                    );
             
-            editable.height(setHeight);
+            nEditable.height(setHeight);
         },
         onblur: function() {
             src.value = $("#summernote").code();
