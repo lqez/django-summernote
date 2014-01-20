@@ -41,6 +41,5 @@ setup(
     classifiers=CLASSIFIERS,
 
     install_requires=['django'],
-    tests_require=['argparse', 'django-setuptest'],
-    test_suite='setuptest.setuptest.SetupTestSuite',
+    test_suite='runtests.runtests',
 )

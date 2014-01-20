@@ -5,6 +5,8 @@ DATABASES = {
     }
 }
 
+SECRET_KEY = 'django_summernote'
+
 ROOT_URLCONF = 'django_summernote.urls'
 
 INSTALLED_APPS = (
