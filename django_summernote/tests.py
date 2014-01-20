@@ -49,11 +49,11 @@ class DjangoSummernoteTest(TestCase):
         import os
         url = reverse('django_summernote-upload_attachment')
 
-        with open(__file__) as fp:
+        with open(__file__, 'rb') as fp:
             response = self.client.post(url, {'files': [fp]})
             self.assertEqual(response.status_code, 200)
             self.assertContains(
-                response, '"name": "{}"'.format(os.path.basename(__file__)))
+                response, '"name": "%s"' % os.path.basename(__file__))
             self.assertContains(response, '"url": ')
             self.assertContains(response, '"size": ')
 
@@ -76,7 +76,7 @@ class DjangoSummernoteTest(TestCase):
         size = os.path.getsize(__file__)
         summernote_config['attachment_filesize_limit'] = size - 1
 
-        with open(__file__) as fp:
+        with open(__file__, 'rb') as fp:
             response = self.client.post(url, {'files': [fp]})
             self.assertNotEqual(response.status_code, 200)
 
