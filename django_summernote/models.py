@@ -44,8 +44,10 @@ def _get_attachment_storage():
 
 class Attachment(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
-    file = models.FileField(upload_to=summernote_config['attachment_upload_to'],
-                            storage=_get_attachment_storage())
+    file = models.FileField(
+        upload_to=summernote_config['attachment_upload_to'],
+        storage=_get_attachment_storage()
+    )
 
     uploaded = models.DateTimeField(auto_now_add=True)
 

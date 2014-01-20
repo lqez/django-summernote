@@ -6,6 +6,7 @@ DATABASES = {
 }
 
 STATIC_URL = '/'
+MEDIA_ROOT = 'test_media'
 
 SECRET_KEY = 'django_summernote'
 
@@ -15,3 +16,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_summernote',
 )
+
+SUMMERNOTE_CONFIG = {
+    'attachment_storage_class': 'django.core.files.storage.DefaultStorage',
+}

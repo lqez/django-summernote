@@ -1,8 +1,12 @@
-from django.test import TestCase
+from django.contrib.admin.sites import AdminSite
 from django.core.urlresolvers import reverse
+from django.test import TestCase
+from django_summernote.settings import summernote_config
 
 
 class DjangoSummernoteTest(TestCase):
+    def setUp(self):
+        self.site = AdminSite()
 
     def test_base(self):
         self.assertTrue(True)
@@ -10,6 +14,7 @@ class DjangoSummernoteTest(TestCase):
     def test_url(self):
         url = reverse('django_summernote-editor', kwargs={'id': 'foobar'})
         response = self.client.get(url)
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'summernote.min.js')
         self.assertContains(response, 'summernote.css')
@@ -18,8 +23,74 @@ class DjangoSummernoteTest(TestCase):
         from django_summernote.widgets import SummernoteWidget
 
         widget = SummernoteWidget()
-        html = widget.render('foobar', 'lorem ipsum', attrs={'id': 'foobar'})
-        url = reverse('django_summernote-editor', kwargs={'id': 'foobar'})
+        html = widget.render(
+            'foobar', 'lorem ipsum', attrs={'id': 'id_foobar'}
+        )
+        url = reverse('django_summernote-editor', kwargs={'id': 'id_foobar'})
 
         assert url in html
-        assert 'id="foobar"' in html
+        assert 'id="id_foobar"' in html
+
+    def test_form(self):
+        from django import forms
+        from django_summernote.widgets import SummernoteWidget
+
+        class SimpleForm(forms.Form):
+            foobar = forms.CharField(widget=SummernoteWidget())
+
+        f = SimpleForm()
+        html = f.as_p()
+        url = reverse('django_summernote-editor', kwargs={'id': 'id_foobar'})
+
+        assert url in html
+        assert 'id="id_foobar"' in html
+
+    def test_attachment(self):
+        import os
+        url = reverse('django_summernote-upload_attachment')
+
+        with open(__file__) as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(
+                response, '"name": "{}"'.format(os.path.basename(__file__)))
+            self.assertContains(response, '"url": ')
+            self.assertContains(response, '"size": ')
+
+    def test_attachment_bad_request(self):
+        url = reverse('django_summernote-upload_attachment')
+        response = self.client.get(url)
+
+        self.assertNotEqual(response.status_code, 200)
+
+    def test_attachment_no_attachment(self):
+        url = reverse('django_summernote-upload_attachment')
+        response = self.client.post(url)
+
+        self.assertNotEqual(response.status_code, 200)
+
+    def test_attachment_filesize_exceed(self):
+        import os
+
+        url = reverse('django_summernote-upload_attachment')
+        size = os.path.getsize(__file__)
+        summernote_config['attachment_filesize_limit'] = size - 1
+
+        with open(__file__) as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertNotEqual(response.status_code, 200)
+
+    def test_admin_decorator(self):
+        from django.db import models
+        from django_summernote.admin import SummernoteModelAdmin
+        from django_summernote.widgets import SummernoteWidget
+
+        class SimpleModel(models.Model):
+            foobar = models.TextField()
+
+        ma = SummernoteModelAdmin(SimpleModel, self.site)
+
+        assert isinstance(
+            ma.get_form(None).base_fields['foobar'].widget,
+            SummernoteWidget
+        )

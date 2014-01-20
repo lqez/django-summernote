@@ -25,6 +25,9 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+test_media
+.coveralls.yml
+coverage.xml
 
 # Translations
 *.mo
@@ -35,10 +38,3 @@ nosetests.xml
 .pydevproject
 
 .ropeproject
-
-# django-setuptest
-coverage.xml
-pep8.txt
-
-
-.coveralls.yml
