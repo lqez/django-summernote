@@ -9,7 +9,7 @@ __all__ = ['Attachment', ]
 
 
 # module importer code comes from
-# https://github.com/django-debug-toolbar/django-debug-toolbar/blob/master/debug_toolbar/toolbar/loader.py
+# https://github.com/django-debug-toolbar/
 
 def _get_attachment_storage():
     if summernote_config['attachment_storage_class']:
