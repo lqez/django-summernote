@@ -2,6 +2,7 @@ from django.contrib.admin.sites import AdminSite
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django_summernote.settings import summernote_config
+from imp import reload
 
 
 class DjangoSummernoteTest(TestCase):
@@ -57,6 +58,45 @@ class DjangoSummernoteTest(TestCase):
             self.assertContains(response, '"url": ')
             self.assertContains(response, '"size": ')
 
+    def test_attachment_with_custom_storage(self):
+        summernote_config['attachment_storage_class'] = \
+            'django.core.files.storage.DefaultStorage'
+
+        # reloading module to apply custom stroage class
+        from django_summernote import models
+        reload(models)
+
+        url = reverse('django_summernote-upload_attachment')
+
+        with open(__file__, 'rb') as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertEqual(response.status_code, 200)
+
+    def test_attachment_with_bad_storage(self):
+        from django.core.exceptions import ImproperlyConfigured
+
+        # ValueError
+        summernote_config['attachment_storage_class'] = \
+            'wow_no_dot_storage_class_name'
+        with self.assertRaises(ImproperlyConfigured):
+            from django_summernote import models
+            reload(models)
+
+        # ImportError
+        summernote_config['attachment_storage_class'] = \
+            'wow.such.fake.storage'
+        with self.assertRaises(ImproperlyConfigured):
+            from django_summernote import models
+            reload(models)
+
+        # AttributeError
+        summernote_config['attachment_storage_class'] = \
+            'django.core.files.storage.DogeStorage'
+
+        with self.assertRaises(ImproperlyConfigured):
+            from django_summernote import models
+            reload(models)
+
     def test_attachment_bad_request(self):
         url = reverse('django_summernote-upload_attachment')
         response = self.client.get(url)
@@ -74,13 +114,16 @@ class DjangoSummernoteTest(TestCase):
 
         url = reverse('django_summernote-upload_attachment')
         size = os.path.getsize(__file__)
+        old_limit = summernote_config['attachment_filesize_limit']
         summernote_config['attachment_filesize_limit'] = size - 1
 
         with open(__file__, 'rb') as fp:
             response = self.client.post(url, {'files': [fp]})
             self.assertNotEqual(response.status_code, 200)
 
-    def test_admin_decorator(self):
+        summernote_config['attachment_filesize_limit'] = old_limit
+
+    def test_admin_model(self):
         from django.db import models
         from django_summernote.admin import SummernoteModelAdmin
         from django_summernote.widgets import SummernoteWidget

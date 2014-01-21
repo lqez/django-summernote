@@ -13,7 +13,8 @@ def editor(request, id):
         'lang': summernote_config['lang'],
         'height': summernote_config['height'],
         'url': {
-            'upload_attachment': reverse_lazy('django_summernote-upload_attachment'),
+            'upload_attachment':
+            reverse_lazy('django_summernote-upload_attachment'),
         },
     })
 
@@ -34,7 +35,9 @@ def upload_attachment(request):
             attachment.name = file.name
 
             if file.size > summernote_config['attachment_filesize_limit']:
-                return HttpResponseBadRequest('File size exceeds the limit allowed and cannot be saved')
+                return HttpResponseBadRequest(
+                    'File size exceeds the limit allowed and cannot be saved'
+                )
 
             attachment.save()
             attachments.append(attachment)

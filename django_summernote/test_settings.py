@@ -16,7 +16,3 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_summernote',
 )
-
-SUMMERNOTE_CONFIG = {
-    'attachment_storage_class': 'django.core.files.storage.DefaultStorage',
-}

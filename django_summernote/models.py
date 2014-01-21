@@ -9,7 +9,7 @@ __all__ = ['Attachment', ]
 
 
 # module importer code comes from
-# https://github.com/django-debug-toolbar/
+# https://github.com/django-debug-toolbar/django-debug-toolbar/
 
 def _get_attachment_storage():
     if summernote_config['attachment_storage_class']:
@@ -50,6 +50,3 @@ class Attachment(models.Model):
     )
 
     uploaded = models.DateTimeField(auto_now_add=True)
-
-    def __unicode__(self):
-        return self.name

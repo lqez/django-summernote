@@ -6,15 +6,20 @@ from django_summernote import version, PROJECT
 MODULE_NAME = 'django_summernote'
 PACKAGE_DATA = list()
 CLASSIFIERS = [
-    'Topic :: Utilities',
-    'Topic :: Internet :: WWW/HTTP',
-    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Development Status :: 4 - Beta',
     'Environment :: Web Environment',
     'Framework :: Django',
-    'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
-    'Programming Language :: Python',
     'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python',
+    'Topic :: Internet :: WWW/HTTP',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Utilities',
 ]
 
 for directory in ['static', 'templates']:
