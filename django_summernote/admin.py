@@ -4,6 +4,10 @@ from django_summernote.widgets import SummernoteWidget
 from django_summernote.models import Attachment
 
 
+class SummernoteInlineModelAdmin(admin.options.InlineModelAdmin):
+    formfield_overrides = {models.TextField: {'widget': SummernoteWidget}}
+
+
 class SummernoteModelAdmin(admin.ModelAdmin):
     formfield_overrides = {models.TextField: {'widget': SummernoteWidget}}
 
