@@ -3,9 +3,9 @@ django-summernote
 [![Build Status](https://travis-ci.org/lqez/django-summernote.png?branch=master)](https://travis-ci.org/lqez/django-summernote)
 [![Coverage Status](https://coveralls.io/repos/lqez/django-summernote/badge.png?branch=master)](https://coveralls.io/r/lqez/django-summernote?branch=master)
 
-[Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor based on Twitter's Bootstrap.
+[Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor.
 
-`django-summernote` plugin allows you to embed Summernote into your Django admin page very handy.
+`django-summernote` allows you to embed Summernote into Django very handy. Support mixins for admin, model and widgets.
 
 ![django-summernote](https://raw.github.com/lqez/pastebin/master/img/django-summernote.png "Screenshot of django-summernote")
 
