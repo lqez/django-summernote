@@ -3,7 +3,7 @@
     {
         "name": "{{ attachment.name }}",
         "size": {{ attachment.file.size }},
-        "url": "{{ attachment.file.url }}"
+        "url": "{{ attachment.file.url|safe }}"
     }
     {% if not forloop.last %},{% endif %}
 {% endfor %}
