@@ -66,6 +66,9 @@ Put `SUMMERNOTE_CONFIG` into your settings file.
 In settings.py, 
 
     SUMMERNOTE_CONFIG = {
+        # Usage of iframe
+        'iframe': True,
+
         # Change editor size
         'width': '100%',
         'height': '480',
