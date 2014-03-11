@@ -7,7 +7,7 @@ from django_summernote.settings import summernote_config
 
 
 def editor(request, id):
-    return render(request, 'django_summernote/editor.html', {
+    return render(request, 'django_summernote/widget_iframe_editor.html', {
         'id': id,
         'toolbar': json.dumps(summernote_config['toolbar']),
         'lang': summernote_config['lang'],

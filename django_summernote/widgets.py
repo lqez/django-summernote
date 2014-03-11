@@ -31,7 +31,7 @@ class SummernoteWidget(forms.Textarea):
                            kwargs={'id': attrs['id']})
         html += render_to_string('django_summernote/widget_iframe.html',
                                  {
-                                     'id': '{}-iframe'.format(attrs['id']),
+                                     'id': '%s-iframe' % (attrs['id']),
                                      'src': url,
                                      'attrs': flatatt(final_attrs),
                                      'width': summernote_config['width'],
@@ -57,7 +57,7 @@ class SummernoteInplaceWidget(forms.Textarea):
         )
         if summernote_config['lang'] != 'en-US':
             js += (_static_url(
-                'django_summernote/lang/summernote-{}.js'.format(summernote_config['lang'])
+                'django_summernote/lang/summernote-%s.js' % (summernote_config['lang'])
             ), )
 
     def render(self, name, value, attrs=None):

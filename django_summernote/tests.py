@@ -32,6 +32,16 @@ class DjangoSummernoteTest(TestCase):
         assert url in html
         assert 'id="id_foobar"' in html
 
+    def test_widget_inplace(self):
+        from django_summernote.widgets import SummernoteInplaceWidget
+
+        widget = SummernoteInplaceWidget()
+        html = widget.render(
+            'foobar', 'lorem ipsum', attrs={'id': 'id_foobar'}
+        )
+
+        assert 'summernote' in html
+
     def test_form(self):
         from django import forms
         from django_summernote.widgets import SummernoteWidget
@@ -126,12 +136,23 @@ class DjangoSummernoteTest(TestCase):
     def test_admin_model(self):
         from django.db import models
         from django_summernote.admin import SummernoteModelAdmin
+        from django_summernote.admin import SummernoteInlineModelAdmin
         from django_summernote.widgets import SummernoteWidget
+
+        class SimpleParentModel(models.Model):
+            foobar = models.TextField()
 
         class SimpleModel(models.Model):
             foobar = models.TextField()
+            parent = models.ForeignKey(SimpleParentModel)
 
-        ma = SummernoteModelAdmin(SimpleModel, self.site)
+        class SimpleModelInline(SummernoteInlineModelAdmin):
+            model = SimpleModel
+
+        class SimpleParentModelAdmin(SummernoteModelAdmin):
+            inlines = [SimpleModelInline]
+
+        ma = SimpleParentModelAdmin(SimpleParentModel, self.site)
 
         assert isinstance(
             ma.get_form(None).base_fields['foobar'].widget,
