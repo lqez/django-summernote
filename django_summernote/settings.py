@@ -13,6 +13,7 @@ def uploaded_filepath(instance, filename):
 
 SETTINGS_USER = getattr(settings, 'SUMMERNOTE_CONFIG', {})
 SETTINGS_DEFAULT = {
+    'iframe': True,
     'width': 720,
     'height': 480,
     'toolbar': [
