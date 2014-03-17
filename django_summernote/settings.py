@@ -19,13 +19,15 @@ SETTINGS_DEFAULT = {
     'toolbar': [
         ['style', ['style']],
         ['font', ['bold', 'italic', 'underline', 'clear']],
+        ['fontname', ['fontname']],
         ['fontsize', ['fontsize']],
         ['color', ['color']],
         ['para', ['ul', 'ol', 'paragraph']],
         ['height', ['height']],
         ['table', ['table']],
-        ['insert', ['link', 'picture']],
-        ['misc', ['codeview', 'help']]
+        ['insert', ['link', 'picture', 'video']],
+        ['view', ['fullscreen', 'codeview']],
+        ['help', ['help']],
     ],
     'lang': 'en-US',
 
