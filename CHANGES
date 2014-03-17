@@ -12,7 +12,7 @@
 0.3.6 - Support image dropzone and insert an image via url
 0.3.5 - Support file backend for attachments (issue #2)
 0.3.4 - Fix for Firefox (issue #7)
-0.3.3 - Update Summernote to breeding edge
+0.3.3 - Update Summernote to bleeding edge
 0.3.2 - Support customization via settings
 0.3.1 - Apply Summernote v0.3.1
 0.2.7 - Make editor size fit to its parent
