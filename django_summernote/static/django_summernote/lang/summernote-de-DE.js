@@ -21,7 +21,8 @@
         floatNone: 'Kein Textfluss',
         dragImageHere: 'Ziehen Sie ein Bild mit der Maus hierher',
         selectFromFiles: 'Wählen Sie eine Datei aus',
-        url: 'Grafik URL'
+        url: 'Grafik URL',
+		remove: 'Grafik entfernen'
       },
       link: {
         link: 'Link',
@@ -29,7 +30,8 @@
         unlink: 'Link entfernen',
         edit: 'Editieren',
         textToDisplay: 'Anzeigetext',
-        url: 'Ziel des Links?'
+        url: 'Ziel des Links?',
+        openInNewWindow: 'In einem neuen Fenster öffnen'
       },
       video: {
         video: 'Video',
