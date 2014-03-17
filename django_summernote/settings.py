@@ -34,6 +34,15 @@ SETTINGS_DEFAULT = {
     'attachment_upload_to': uploaded_filepath,
     'attachment_storage_class': None,
     'attachment_filesize_limit': 1024 * 1024,
+
+    'inplacewidget_external_css': (
+        '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap.no-icons.min.css',
+        '//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css',
+    ),
+    'inplacewidget_external_js': (
+        '//code.jquery.com/jquery-1.9.1.min.js',
+        '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js',
+    ),
 }
 
 summernote_config = SETTINGS_DEFAULT.copy()

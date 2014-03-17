@@ -42,19 +42,17 @@ class SummernoteWidget(forms.Textarea):
 
 class SummernoteInplaceWidget(forms.Textarea):
     class Media:
-        css = {'all': (
-            '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap.no-icons.min.css',
-            '//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css',
+        css = {'all': summernote_config['inplacewidget_external_css'] + (
             _static_url('django_summernote/summernote.css'),
         )}
-        js = (
-            '//code.jquery.com/jquery-1.9.1.min.js',
-            '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js',
+
+        js = summernote_config['inplacewidget_external_js'] + (
             _static_url('django_summernote/summernote.min.js'),
             _static_url('django_summernote/jquery.ui.widget.js'),
             _static_url('django_summernote/jquery.iframe-transport.js'),
             _static_url('django_summernote/jquery.fileupload.js'),
         )
+
         if summernote_config['lang'] != 'en-US':
             js += (_static_url(
                 'django_summernote/lang/summernote-%s.js' % (summernote_config['lang'])
