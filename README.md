@@ -48,11 +48,15 @@ In `admin.py`,
 
 Or, in `forms`,
 
-    from django_summernote.widgets import SummernoteWidget
+    from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
 
     # Apply summernote to specific fields.
     class SomeForm(forms.Form):
         foo = forms.CharField(widget=SummernoteWidget())  # instead of forms.Textarea
+
+    # If you don't like <iframe>, then use inplace widget.
+    class AnotherForm(forms.Form):
+        bar = forms.CharField(widget=SummernoteInplaceWidget())
 
 And don't forget to use it with `safe` filter in templates.
 
@@ -66,8 +70,8 @@ Put `SUMMERNOTE_CONFIG` into your settings file.
 In settings.py, 
 
     SUMMERNOTE_CONFIG = {
-        # Usage of iframe
-        'iframe': True,
+        # Using SummernoteWidget - iframe mode
+        'iframe': True,  # or set False to use SummernoteInplaceWidget - no iframe mode
 
         # Change editor size
         'width': '100%',
