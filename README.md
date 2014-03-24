@@ -59,7 +59,17 @@ Or, in `forms`,
     class AnotherForm(forms.Form):
         bar = forms.CharField(widget=SummernoteInplaceWidget())
 
-And don't forget to use it with `safe` filter in templates.
+And for `ModelForm`,
+
+```
+class FormFromSomeModel(forms.ModelForm):
+    class Meta:
+        model = SomeModel
+        widgets = {
+            'foo': SummernoteWidget(),
+            'bar': SummernoteInplaceWidget(),
+        }
+```
 
 
 OPTIONS
