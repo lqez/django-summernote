@@ -16,7 +16,17 @@ def _static_url(url):
     return os.path.join(settings.STATIC_URL, url)
 
 
-class SummernoteWidget(forms.Textarea):
+class SummernoteWidgetBase(forms.Textarea):
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name, None)
+
+        if value in summernote_config['empty']:
+            return None
+
+        return value
+
+
+class SummernoteWidget(SummernoteWidgetBase):
     def render(self, name, value, attrs=None):
         attrs_for_textarea = attrs.copy()
         attrs_for_textarea['hidden'] = 'true'
@@ -40,7 +50,7 @@ class SummernoteWidget(forms.Textarea):
         return mark_safe(html)
 
 
-class SummernoteInplaceWidget(forms.Textarea):
+class SummernoteInplaceWidget(SummernoteWidgetBase):
     class Media:
         css = {'all': summernote_config['inplacewidget_external_css'] + (
             _static_url('django_summernote/summernote.css'),
