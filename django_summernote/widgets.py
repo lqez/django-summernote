@@ -52,11 +52,11 @@ class SummernoteWidget(SummernoteWidgetBase):
 
 class SummernoteInplaceWidget(SummernoteWidgetBase):
     class Media:
-        css = {'all': summernote_config['inplacewidget_external_css'] + (
+        css = {'all': (summernote_config['inplacewidget_external_css']) + (
             _static_url('django_summernote/summernote.css'),
         )}
 
-        js = summernote_config['inplacewidget_external_js'] + (
+        js = (summernote_config['inplacewidget_external_js']) + (
             _static_url('django_summernote/summernote.min.js'),
             _static_url('django_summernote/jquery.ui.widget.js'),
             _static_url('django_summernote/jquery.iframe-transport.js'),
