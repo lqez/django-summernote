@@ -32,8 +32,8 @@ SETUP
 
 4. Run `syncdb` for preparing attachment model.
 
-        python manage.py syncdb 
-        
+        python manage.py syncdb
+
 
 USAGE
 -----
@@ -61,15 +61,13 @@ Or, in `forms`,
 
 And for `ModelForm`,
 
-```
-class FormFromSomeModel(forms.ModelForm):
-    class Meta:
-        model = SomeModel
-        widgets = {
-            'foo': SummernoteWidget(),
-            'bar': SummernoteInplaceWidget(),
-        }
-```
+    class FormFromSomeModel(forms.ModelForm):
+        class Meta:
+            model = SomeModel
+            widgets = {
+                'foo': SummernoteWidget(),
+                'bar': SummernoteInplaceWidget(),
+            }
 
 
 OPTIONS
@@ -78,7 +76,7 @@ OPTIONS
 Support customization via settings.
 Put `SUMMERNOTE_CONFIG` into your settings file.
 
-In settings.py, 
+In settings.py,
 
     SUMMERNOTE_CONFIG = {
         # Using SummernoteWidget - iframe mode
@@ -104,6 +102,16 @@ In settings.py,
 
         # Set custom storage class for attachments.
         'attachment_storage_class': 'my.custom.storage.class.name',
+
+        # Set external media files for SummernoteInplaceWidget.
+        'inplacewidget_external_css': (
+            '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap.no-icons.min.css',
+            '//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css',
+        t),
+        'inplacewidget_external_js': (
+            '//code.jquery.com/jquery-1.9.1.min.js',
+            '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js',
+        ),
     }
 
   - About language/locale: [Summernote i18n section](http://hackerwins.github.io/summernote/features.html#i18n-language)
@@ -115,7 +123,8 @@ Or, you can styling editor via attributes of the widget. These adhoc styling wil
     class SomeForm(forms.Form):
         foo = forms.CharField(widget=SummernoteWidget(attrs={'width': '50%', 'height': '400px'}))
 
-(TODO) Document for addtional settings will be added, soon. :^`D
+(TODO) Document for addtional settings will be added, soon. :^D
+
 
 AUTHOR
 ------
