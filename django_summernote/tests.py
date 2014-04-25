@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.contrib.admin.sites import AdminSite
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -55,6 +56,24 @@ class DjangoSummernoteTest(TestCase):
 
         assert url in html
         assert 'id="id_foobar"' in html
+
+    def test_empty(self):
+        from django import forms
+        from django_summernote.widgets import SummernoteWidget
+
+        class SimpleForm(forms.Form):
+            foobar = forms.CharField(widget=SummernoteWidget())
+
+        should_be_parsed_as_empty = '<p><br></p>'
+        should_not_be_parsed_as_empty = '<p>lorem ipsum</p>'
+
+        f = SimpleForm({'foobar': should_be_parsed_as_empty})
+        assert not f.is_valid()
+        assert not f.cleaned_data.get('foobar')
+
+        f = SimpleForm({'foobar': should_not_be_parsed_as_empty})
+        assert f.is_valid()
+        assert f.cleaned_data.get('foobar')
 
     def test_attachment(self):
         import os
@@ -132,6 +151,18 @@ class DjangoSummernoteTest(TestCase):
             self.assertNotEqual(response.status_code, 200)
 
         summernote_config['attachment_filesize_limit'] = old_limit
+
+    def test_lang_ko(self):
+        old_lang = summernote_config['lang']
+        summernote_config['lang'] = 'ko-KR'
+
+        from django_summernote import widgets
+        reload(widgets)
+
+        widget = widgets.SummernoteInplaceWidget()
+
+        summernote_config['lang'] = old_lang
+        assert '/django_summernote/lang/summernote-ko-KR.js' in widget.Media.js
 
     def test_admin_model(self):
         from django.db import models
