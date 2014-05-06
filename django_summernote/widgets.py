@@ -17,6 +17,19 @@ def _static_url(url):
 
 
 class SummernoteWidgetBase(forms.Textarea):
+    @classmethod
+    def template_contexts(cls):
+        return {
+            'toolbar': json.dumps(summernote_config['toolbar']),
+            'lang': summernote_config['lang'],
+            'airMode': 'true' if summernote_config['airMode'] else 'false',
+            'height': summernote_config['height'],
+            'url': {
+                'upload_attachment':
+                reverse_lazy('django_summernote-upload_attachment'),
+            },
+        }
+
     def value_from_datadict(self, data, files, name):
         value = data.get(name, None)
 
@@ -70,23 +83,17 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
 
     def render(self, name, value, attrs=None):
         attrs_for_textarea = attrs.copy()
+        attrs_for_textarea['hidden'] = 'true'
+        attrs_for_textarea['id'] += '-textarea'
         html = super(SummernoteInplaceWidget, self).render(name,
                                                            value,
                                                            attrs_for_textarea)
 
         html += render_to_string(
             'django_summernote/widget_inplace.html',
-            Context(
-                {
-                    'id': attrs['id'],
-                    'toolbar': json.dumps(summernote_config['toolbar']),
-                    'lang': summernote_config['lang'],
-                    'height': summernote_config['height'],
-                    'url': {
-                        'upload_attachment':
-                        reverse_lazy('django_summernote-upload_attachment'),
-                    },
-                }
-            )
+            Context(dict({
+                'value': value if value else '',
+                'id': attrs['id'],
+            }, **SummernoteWidgetBase.template_contexts()))
         )
         return mark_safe(html)

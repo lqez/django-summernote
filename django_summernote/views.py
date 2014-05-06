@@ -1,22 +1,16 @@
-import json
-from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render
 from django_summernote.models import Attachment
 from django_summernote.settings import summernote_config
+from django_summernote.widgets import SummernoteWidgetBase
 
 
 def editor(request, id):
-    return render(request, 'django_summernote/widget_iframe_editor.html', {
-        'id': id,
-        'toolbar': json.dumps(summernote_config['toolbar']),
-        'lang': summernote_config['lang'],
-        'height': summernote_config['height'],
-        'url': {
-            'upload_attachment':
-            reverse_lazy('django_summernote-upload_attachment'),
-        },
-    })
+    return render(
+        request,
+        'django_summernote/widget_iframe_editor.html',
+        dict({'id': id}, **SummernoteWidgetBase.template_contexts())
+    )
 
 
 def upload_attachment(request):

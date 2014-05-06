@@ -1,13 +1,16 @@
+<div id='{{ id }}'>{{ value|safe }}</div>
 <script>
+var textarea = window.document.getElementById('{{ id }}-textarea');
 var src = window.document.getElementById('{{ id }}');
 var csrftoken = getCookie('csrftoken');
 
 $(src).summernote({
     height: {{ height }},
+    airMode: {{ airMode }},
     toolbar: {{ toolbar|safe }},
     lang: '{{ lang }}',
     onblur: function() {
-        src.value = $(this).code();
+        textarea.value = $(this).code();
     },
     onImageUpload: function(files, editor, position) {
         var imageInput = $('.note-image-input');
