@@ -5,7 +5,7 @@ django-summernote
 
 [Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor.
 
-`django-summernote` allows you to embed Summernote into Django very handy. Support mixins for admin, model and widgets.
+`django-summernote` allows you to embed Summernote into Django very handy. Support admin mixins and widgets.
 
 ![django-summernote](https://raw.github.com/lqez/pastebin/master/img/django-summernote.png "Screenshot of django-summernote")
 
