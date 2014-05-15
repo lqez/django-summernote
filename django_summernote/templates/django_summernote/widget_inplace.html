@@ -3,6 +3,7 @@
 var textarea = window.document.getElementById('{{ id }}-textarea');
 var src = window.document.getElementById('{{ id }}');
 var csrftoken = getCookie('csrftoken');
+$(textarea).hide();
 
 $(src).summernote({
     height: {{ height }},
