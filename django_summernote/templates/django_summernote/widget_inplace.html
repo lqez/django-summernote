@@ -1,17 +1,17 @@
 <div id='{{ id }}'>{{ value|safe }}</div>
 <script>
-var textarea = window.document.getElementById('{{ id }}-textarea');
-var src = window.document.getElementById('{{ id }}');
+var {{ id }}_textarea = window.document.getElementById('{{ id }}-textarea');
+var {{ id }}_src = window.document.getElementById('{{ id }}');
 var csrftoken = getCookie('csrftoken');
-$(textarea).hide();
+$({{ id }}_textarea).hide();
 
-$(src).summernote({
+$({{ id }}_src).summernote({
     height: {{ height }},
     airMode: {{ airMode }},
     toolbar: {{ toolbar|safe }},
     lang: '{{ lang }}',
     onblur: function() {
-        textarea.value = $(this).code();
+        {{ id }}_textarea.value = $(this).code();
     },
     onImageUpload: function(files, editor, position) {
         var imageInput = $('.note-image-input');
