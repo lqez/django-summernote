@@ -126,6 +126,21 @@ class DjangoSummernoteTest(TestCase):
             from django_summernote import models
             reload(models)
 
+        # IOError with patching storage class
+        from django_summernote.models import Attachment
+        from dummyplug.storage import IOErrorStorage
+        file_field = Attachment._meta.get_field_by_name('file')[0]
+        original_storage = file_field.storage
+        file_field.storage = IOErrorStorage()
+
+        url = reverse('django_summernote-upload_attachment')
+
+        with open(__file__, 'rb') as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertNotEqual(response.status_code, 200)
+
+        file_field.storage = original_storage
+
     def test_attachment_bad_request(self):
         url = reverse('django_summernote-upload_attachment')
         response = self.client.get(url)

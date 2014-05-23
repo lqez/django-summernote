@@ -48,5 +48,4 @@ class Attachment(models.Model):
         upload_to=summernote_config['attachment_upload_to'],
         storage=_get_attachment_storage()
     )
-
     uploaded = models.DateTimeField(auto_now_add=True)
