@@ -5,6 +5,12 @@ DATABASES = {
     }
 }
 
+MIDDLEWARE_CLASSES = (
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+)
+
 STATIC_URL = '/'
 MEDIA_ROOT = 'test_media'
 

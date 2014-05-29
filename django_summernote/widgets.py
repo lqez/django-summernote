@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.translation import get_language
 from django.forms.util import flatatt
 from django_summernote.settings import summernote_config
 from django.conf import settings
@@ -16,12 +17,20 @@ def _static_url(url):
     return os.path.join(settings.STATIC_URL, url)
 
 
+def _get_proper_language():
+    # Detect language automatically by get_language()
+    if not summernote_config['lang']:
+        return summernote_config['lang_matches'].get(get_language(), 'en-US')
+
+    return summernote_config['lang']
+
+
 class SummernoteWidgetBase(forms.Textarea):
     @classmethod
     def template_contexts(cls):
         return {
             'toolbar': json.dumps(summernote_config['toolbar']),
-            'lang': summernote_config['lang'],
+            'lang': _get_proper_language(),
             'airMode': 'true' if summernote_config['airMode'] else 'false',
             'height': summernote_config['height'],
             'url': {
@@ -76,11 +85,6 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
             _static_url('django_summernote/jquery.fileupload.js'),
         )
 
-        if summernote_config['lang'] != 'en-US':
-            js += (_static_url(
-                'django_summernote/lang/summernote-%s.js' % (summernote_config['lang'])
-            ), )
-
     def render(self, name, value, attrs=None):
         attrs_for_textarea = attrs.copy()
         attrs_for_textarea['hidden'] = 'true'
@@ -92,6 +96,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
         html += render_to_string(
             'django_summernote/widget_inplace.html',
             Context(dict({
+                'STATIC_URL': settings.STATIC_URL,
                 'value': value if value else '',
                 'id': attrs['id'],
             }, **SummernoteWidgetBase.template_contexts()))

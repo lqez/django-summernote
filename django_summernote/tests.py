@@ -167,17 +167,33 @@ class DjangoSummernoteTest(TestCase):
 
         summernote_config['attachment_filesize_limit'] = old_limit
 
-    def test_lang_ko(self):
+    def test_lang_specified(self):
         old_lang = summernote_config['lang']
         summernote_config['lang'] = 'ko-KR'
 
         from django_summernote import widgets
-        reload(widgets)
-
         widget = widgets.SummernoteInplaceWidget()
-
+        html = widget.render(
+            'foobar', 'lorem ipsum', attrs={'id': 'id_foobar'}
+        )
         summernote_config['lang'] = old_lang
-        assert '/django_summernote/lang/summernote-ko-KR.js' in widget.Media.js
+
+        assert "lang: 'ko-KR'" in html
+        assert '/django_summernote/lang/summernote-ko-KR.js' in html
+
+    def test_lang_accept_language(self):
+
+        from django.utils.translation import activate
+        activate('fr')
+
+        from django_summernote import widgets
+        widget = widgets.SummernoteInplaceWidget()
+        html = widget.render(
+            'foobar', 'lorem ipsum', attrs={'id': 'id_foobar'}
+        )
+
+        assert "lang: 'fr-FR'" in html
+        assert '/django_summernote/lang/summernote-fr-FR.js' in html
 
     def test_admin_model(self):
         from django.db import models

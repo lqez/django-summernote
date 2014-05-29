@@ -1,4 +1,8 @@
 <div id='{{ id }}'>{{ value|safe }}</div>
+{% if lang != 'en-US' %}
+<!-- include summernote language pack -->
+<script src="{{ STATIC_URL }}django_summernote/lang/summernote-{{ lang }}.js"></script>
+{% endif %}
 <script>
 var {{ id }}_textarea = window.document.getElementById('{{ id }}-textarea');
 var {{ id }}_src = window.document.getElementById('{{ id }}');
