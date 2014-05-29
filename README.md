@@ -89,8 +89,11 @@ In settings.py,
         'width': '100%',
         'height': '480',
 
-        # Set editor language/locale
-        'lang': 'en-US',
+        # Use proper language setting automatically (default)
+        'lang': None
+
+        # Or, set editor language/locale forcely
+        'lang': 'ko-KR',
 
         # Customize toolbar buttons
         'toolbar': [
