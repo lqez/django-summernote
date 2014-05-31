@@ -18,7 +18,7 @@ def _static_url(url):
 
 
 def _get_proper_language():
-    # Detect language automatically by get_language()
+    """Detect language automatically by get_language()"""
     if not summernote_config['lang']:
         return summernote_config['lang_matches'].get(get_language(), 'en-US')
 
@@ -28,6 +28,7 @@ def _get_proper_language():
 class SummernoteWidgetBase(forms.Textarea):
     @classmethod
     def template_contexts(cls):
+        """SummernoteWidgetBase::template_contexts"""
         return {
             'toolbar': json.dumps(summernote_config['toolbar']),
             'lang': _get_proper_language(),
@@ -49,6 +50,7 @@ class SummernoteWidgetBase(forms.Textarea):
 
 
 class SummernoteWidget(SummernoteWidgetBase):
+    """SummernoteWidget"""
     def render(self, name, value, attrs=None):
         attrs_for_textarea = attrs.copy()
         attrs_for_textarea['hidden'] = 'true'
@@ -73,6 +75,7 @@ class SummernoteWidget(SummernoteWidgetBase):
 
 
 class SummernoteInplaceWidget(SummernoteWidgetBase):
+    """SummernoteInplaceWidget"""
     class Media:
         css = {'all': (summernote_config['inplacewidget_external_css']) + (
             _static_url('django_summernote/summernote.css'),
@@ -86,6 +89,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
         )
 
     def render(self, name, value, attrs=None):
+        """SummernoteInplaceWidget::render"""
         attrs_for_textarea = attrs.copy()
         attrs_for_textarea['hidden'] = 'true'
         attrs_for_textarea['id'] += '-textarea'

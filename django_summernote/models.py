@@ -12,6 +12,7 @@ __all__ = ['Attachment', ]
 # https://github.com/django-debug-toolbar/django-debug-toolbar/
 
 def _get_attachment_storage():
+    """_get_attachment_storage"""
     if summernote_config['attachment_storage_class']:
         storage_path = summernote_config['attachment_storage_class']
         try:
@@ -43,6 +44,7 @@ def _get_attachment_storage():
 
 
 class Attachment(models.Model):
+    """Attachment"""
     name = models.CharField(max_length=255, null=True, blank=True)
     file = models.FileField(
         upload_to=summernote_config['attachment_upload_to'],

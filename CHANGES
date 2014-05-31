@@ -1,31 +1,62 @@
-0.5.10 - Add support for serving proper language automatically
-0.5.9 - Bump summernote version, fix minor bug and added test for IOError
-0.5.8 - Bump summernote version with air-mode support
-0.5.7 - Update summernote with major bug fixes with language set updates
-0.5.6 - Fix ignoring required=True problem on inplace widget
-0.5.5 - Update summernote with several bug fixes with new language sets 
-0.5.4 - Added inplace - no iframe - widget
-0.5.3 - Add more unittest with coverall.io settings
-0.5.2 - Fix double scrollbar problem (by jeyraof)
-0.5.1 - Add support for python 3
-0.5.0 - Update Summernote v0.5.0
-0.4.2 - Replace deprecated packages on Django 1.6
-0.4.1 - Update Summernote v0.4.1
-0.3.9 - Use a string type 'attachment_storage_class' to pass custom storage class
-0.3.8 - Change the type of 'attachment_storage' to class, not an instance
-0.3.7 - Fix overriding editor style via widget attributes
-0.3.6 - Support image dropzone and insert an image via url
-0.3.5 - Support file backend for attachments (issue #2)
-0.3.4 - Fix for Firefox (issue #7)
-0.3.3 - Update Summernote to bleeding edge
-0.3.2 - Support customization via settings
-0.3.1 - Apply Summernote v0.3.1
-0.2.7 - Make editor size fit to its parent
-0.2.6 - Apply inherited attributes
-0.2.5 - Toolbar customization
-0.2.4 - Update Summernote 
-0.2.3 - Fix for Internet Explorer (issue #1)
-0.2.2 - Using non-responsive bootstrap css
-0.2.1 - Fix packaging problem
-0.2.0 - Apply Summernote v0.2
-0.1.0 - Initial release.
+- 0.5.10
+    - Add support for serving proper language automatically
+- 0.5.9
+    - Bump summernote version, fix minor bug and added test for IOError
+- 0.5.8
+    - Bump summernote version with air-mode support
+- 0.5.7
+    - Update summernote with major bug fixes with language set updates
+- 0.5.6
+    - Fix ignoring required=True problem on inplace widget
+- 0.5.5
+    - Update summernote with several bug fixes with new language sets 
+- 0.5.4
+    - Added inplace - no iframe - widget
+- 0.5.3
+    - Add more unittest with coverall.io settings
+- 0.5.2
+    - Fix double scrollbar problem (by jeyraof)
+- 0.5.1
+    - Add support for python 3
+- 0.5.0
+    - Update Summernote v0.5.0
+- 0.4.2
+    - Replace deprecated packages on Django 1.6
+- 0.4.1
+    - Update Summernote v0.4.1
+- 0.3.9
+    - Use a string type 'attachment_storage_class' to pass custom storage class
+- 0.3.8
+    - Change the type of 'attachment_storage' to class, not an instance
+- 0.3.7
+    - Fix overriding editor style via widget attributes
+- 0.3.6
+    - Support image dropzone and insert an image via url
+- 0.3.5
+    - Support file backend for attachments (issue #2)
+- 0.3.4
+    - Fix for Firefox (issue #7)
+- 0.3.3
+    - Update Summernote to bleeding edge
+- 0.3.2
+    - Support customization via settings
+- 0.3.1
+    - Apply Summernote v0.3.1
+- 0.2.7
+    - Make editor size fit to its parent
+- 0.2.6
+    - Apply inherited attributes
+- 0.2.5
+    - Toolbar customization
+- 0.2.4
+    - Update Summernote 
+- 0.2.3
+    - Fix for Internet Explorer (issue #1)
+- 0.2.2
+    - Using non-responsive bootstrap css
+- 0.2.1
+    - Fix packaging problem
+- 0.2.0
+    - Apply Summernote v0.2
+- 0.1.0
+    - Initial release.

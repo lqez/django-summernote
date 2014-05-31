@@ -5,6 +5,7 @@ from django.conf import settings
 
 
 def uploaded_filepath(instance, filename):
+    """uploaded_filepath"""
     ext = filename.split('.')[-1]
     filename = "%s.%s" % (uuid.uuid4(), ext)
     today = datetime.now().strftime('%Y-%m-%d')

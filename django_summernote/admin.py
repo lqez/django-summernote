@@ -7,6 +7,11 @@ from django_summernote.settings import summernote_config
 __widget__ = SummernoteWidget if summernote_config['iframe'] \
     else SummernoteInplaceWidget
 
+__all__ = ['SummernoteInlineModelAdmin',
+           'SummernoteModelAdmin',
+           'AttachmentAdmin',
+           ]
+
 
 class SummernoteInlineModelAdmin(admin.options.InlineModelAdmin):
     """SummernoteInlineModelAdmin"""

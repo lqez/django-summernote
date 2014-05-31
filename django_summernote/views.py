@@ -6,6 +6,7 @@ from django_summernote.widgets import SummernoteWidgetBase
 
 
 def editor(request, id):
+    """editor"""
     return render(
         request,
         'django_summernote/widget_iframe_editor.html',
@@ -14,6 +15,7 @@ def editor(request, id):
 
 
 def upload_attachment(request):
+    """upload_attachment"""
     if request.method != 'POST':
         return HttpResponseBadRequest('Only POST method is allowed')
 
