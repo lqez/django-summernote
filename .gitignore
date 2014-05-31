@@ -38,3 +38,6 @@ coverage.xml
 .pydevproject
 
 .ropeproject
+
+# Sphinx
+_build

@@ -9,14 +9,17 @@ __widget__ = SummernoteWidget if summernote_config['iframe'] \
 
 
 class SummernoteInlineModelAdmin(admin.options.InlineModelAdmin):
+    """SummernoteInlineModelAdmin"""
     formfield_overrides = {models.TextField: {'widget': __widget__}}
 
 
 class SummernoteModelAdmin(admin.ModelAdmin):
+    """SummernoteModelAdmin"""
     formfield_overrides = {models.TextField: {'widget': __widget__}}
 
 
 class AttachmentAdmin(admin.ModelAdmin):
+    """AttachmentAdmin"""
     list_display = ['name', 'file', 'uploaded']
     search_fields = ['name']
     ordering = ('-id',)

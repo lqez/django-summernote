@@ -1,3 +1,9 @@
+"""
+    django_summernote
+
+    :copyright: Park Hyunwoo
+    :license: MIT
+"""
 version_info = (0, 5, 10)
 
 __version__ = version = '.'.join(map(str, version_info))
