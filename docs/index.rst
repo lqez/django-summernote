@@ -1,7 +1,24 @@
 django-summernote
 =================
 
-Contents:
+Summernote is a simple WYSIWYG editor.
+
+django-summernote allows you to embed Summernote into Django very handy. Support admin mixins and widgets.
+
+Install
+~~~~~~~
+
+
+Usage
+~~~~~
+
+
+Settings
+~~~~~~~~
+
+
+Modules
+~~~~~~~
 
 .. automodule:: django_summernote.admin
    :members:
@@ -23,3 +40,18 @@ Changelog
 ~~~~~~~~~
 
 .. include:: ../CHANGES
+
+
+Authors
+~~~~~~~
+
+Park Hyunwoo(@lqez)
+
+
+Thanks to
+~~~~~~~~~
+
+
+License
+~~~~~~~
+MIT
