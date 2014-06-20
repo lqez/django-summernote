@@ -1,7 +1,7 @@
 import json
 import os
 from django import forms
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -26,16 +26,15 @@ def _get_proper_language():
 
 
 class SummernoteWidgetBase(forms.Textarea):
-    @classmethod
-    def template_contexts(cls):
+    def template_contexts(self):
         return {
-            'toolbar': json.dumps(summernote_config['toolbar']),
+            'toolbar': summernote_config['toolbar'],
             'lang': _get_proper_language(),
             'airMode': 'true' if summernote_config['airMode'] else 'false',
             'height': summernote_config['height'],
             'url': {
                 'upload_attachment':
-                reverse_lazy('django_summernote-upload_attachment'),
+                reverse('django_summernote-upload_attachment'),
             },
         }
 
@@ -59,15 +58,16 @@ class SummernoteWidget(SummernoteWidgetBase):
         final_attrs = self.build_attrs(attrs)
         del final_attrs['id']  # Use original attributes without id.
 
-        url = reverse_lazy('django_summernote-editor',
-                           kwargs={'id': attrs['id']})
+        url = reverse('django_summernote-editor',
+                      kwargs={'id': attrs['id']})
         html += render_to_string('django_summernote/widget_iframe.html',
                                  {
-                                     'id': '%s-iframe' % (attrs['id']),
+                                     'id': '%s_iframe' % (attrs['id']),
                                      'src': url,
                                      'attrs': flatatt(final_attrs),
                                      'width': summernote_config['width'],
                                      'height': summernote_config['height'],
+                                     'settings': json.dumps(self.template_contexts()),
                                  })
         return mark_safe(html)
 
@@ -99,6 +99,6 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'STATIC_URL': settings.STATIC_URL,
                 'value': value if value else '',
                 'id': attrs['id'],
-            }, **SummernoteWidgetBase.template_contexts()))
+            }, **self.template_contexts()))
         )
         return mark_safe(html)
