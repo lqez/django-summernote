@@ -2,14 +2,13 @@ from django.http import HttpResponseBadRequest, HttpResponseServerError
 from django.shortcuts import render
 from django_summernote.models import Attachment
 from django_summernote.settings import summernote_config
-from django_summernote.widgets import SummernoteWidgetBase
 
 
 def editor(request, id):
     return render(
         request,
         'django_summernote/widget_iframe_editor.html',
-        dict({'id': id}, **SummernoteWidgetBase.template_contexts())
+        dict({'id': id})
     )
 
 
