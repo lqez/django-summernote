@@ -15,6 +15,7 @@ SETTINGS_USER = getattr(settings, 'SUMMERNOTE_CONFIG', {})
 SETTINGS_DEFAULT = {
     'iframe': True,
     'airMode': False,
+    'styleWithSpan': True,
     'empty': ('<p><br/></p>', '<p><br></p>'),
 
     'width': 720,
