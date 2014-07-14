@@ -1,59 +1,66 @@
 <div id='{{ id }}'>{{ value|safe }}</div>
-{% if lang != 'en-US' %}
-<!-- include summernote language pack -->
-<script src="{{ STATIC_URL }}django_summernote/lang/summernote-{{ lang }}.js"></script>
-{% endif %}
 <script>
-var {{ id }}_textarea = window.document.getElementById('{{ id }}-textarea');
-var {{ id }}_src = window.document.getElementById('{{ id }}');
-var csrftoken = getCookie('csrftoken');
-$({{ id }}_textarea).hide();
+$(function() {
+    var {{ id }}_textarea = window.document.getElementById('{{ id }}-textarea');
+    var {{ id }}_src = window.document.getElementById('{{ id }}');
+    var {{ id }}_settings = {{ settings|safe }};
+    var csrftoken = getCookie('csrftoken');
 
-$({{ id }}_src).summernote({
-    height: {{ height }},
-    airMode: {{ airMode }},
-    styleWithSpan: {{ styleWithSpan }},
-    toolbar: {{ toolbar|safe }},
-    lang: '{{ lang }}',
-    onblur: function() {
-        {{ id }}_textarea.value = $(this).code();
-    },
-    onImageUpload: function(files, editor, position) {
-        var imageInput = $('.note-image-input');
-        imageInput.fileupload();
-        var jqXHR = imageInput.fileupload('send', 
-            {
-                files: files,
-                formData: {csrfmiddlewaretoken: csrftoken},
-                url: '{{ url.upload_attachment }}',
-            })
-            .success(function (result, textStatus, jqXHR) {
-                data = $.parseJSON(result);
-                $.each(data.files, function (index, file) {
-                    editor.insertImage(position, file.url);
-                });
-            })
-            .error(function (jqXHR, textStatus, errorThrown) {
-                // TODO: Display a detailed error message. It will come from JSON.
-                alert( 'Got an error while uploading images.' );
-            })
-        }
-});
+    // include summernote language pack, synchronously
+    if( {{ id }}_settings.lang != 'en-US' ) {
+        $.ajaxSetup({async:false});
+        $.getScript('{{ STATIC_URL }}django_summernote/lang/summernote-' + {{ id }}_settings.lang + '.js');
+        $.ajaxSetup({async:true});
+    }
 
-// See https://docs.djangoproject.com/en/dev/ref/contrib/csrf/#ajax
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+    $({{ id }}_textarea).hide();
+
+    $({{ id }}_src).summernote({
+        height: {{ id }}_settings.height,
+        airMode: {{ id }}_settings.airMode == 'true',
+        styleWithSpan: {{ id }}_settings.styleWithSpan == 'true',
+        toolbar: {{ id }}_settings.toolbar,
+        lang: {{ id }}_settings.lang,
+        onblur: function() {
+            {{ id }}_textarea.value = $(this).code();
+        },
+        onImageUpload: function(files, editor, position) {
+            var imageInput = $('.note-image-input');
+            imageInput.fileupload();
+            var jqXHR = imageInput.fileupload('send', 
+                {
+                    files: files,
+                    formData: {csrfmiddlewaretoken: csrftoken},
+                    url: {{ id }}_settings.url.upload_attachment,
+                })
+                .success(function (result, textStatus, jqXHR) {
+                    data = $.parseJSON(result);
+                    $.each(data.files, function (index, file) {
+                        editor.insertImage(position, file.url);
+                    });
+                })
+                .error(function (jqXHR, textStatus, errorThrown) {
+                    // TODO: Display a detailed error message. It will come from JSON.
+                    alert( 'Got an error while uploading images.' );
+                })
+            }
+    });
+
+    // See https://docs.djangoproject.com/en/dev/ref/contrib/csrf/#ajax
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
         }
+        return cookieValue;
     }
-    return cookieValue;
-}
+});
 </script>

@@ -178,8 +178,7 @@ class DjangoSummernoteTest(TestCase):
         )
         summernote_config['lang'] = old_lang
 
-        assert "lang: 'ko-KR'" in html
-        assert '/django_summernote/lang/summernote-ko-KR.js' in html
+        assert '"lang": "ko-KR"' in html
 
     def test_lang_accept_language(self):
 
@@ -192,8 +191,7 @@ class DjangoSummernoteTest(TestCase):
             'foobar', 'lorem ipsum', attrs={'id': 'id_foobar'}
         )
 
-        assert "lang: 'fr-FR'" in html
-        assert '/django_summernote/lang/summernote-fr-FR.js' in html
+        assert '"lang": "fr-FR"' in html
 
     def test_admin_model(self):
         from django.db import models

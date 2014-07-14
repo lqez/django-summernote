@@ -30,9 +30,8 @@ class SummernoteWidgetBase(forms.Textarea):
         return {
             'toolbar': summernote_config['toolbar'],
             'lang': _get_proper_language(),
-            'airMode': 'true' if summernote_config['airMode'] else 'false',
-            'styleWithSpan': ('true' if summernote_config['styleWithSpan']
-                              else 'false'),
+            'airMode': summernote_config['airMode'],
+            'styleWithSpan': summernote_config['styleWithSpan'],
             'height': summernote_config['height'],
             'url': {
                 'upload_attachment':
@@ -62,15 +61,17 @@ class SummernoteWidget(SummernoteWidgetBase):
 
         url = reverse('django_summernote-editor',
                       kwargs={'id': attrs['id']})
-        html += render_to_string('django_summernote/widget_iframe.html',
-                                 {
-                                     'id': '%s_iframe' % (attrs['id']),
-                                     'src': url,
-                                     'attrs': flatatt(final_attrs),
-                                     'width': summernote_config['width'],
-                                     'height': summernote_config['height'],
-                                     'settings': json.dumps(self.template_contexts()),
-                                 })
+        html += render_to_string(
+            'django_summernote/widget_iframe.html',
+            {
+                'id': '%s' % (attrs['id']),
+                'src': url,
+                'attrs': flatatt(final_attrs),
+                'width': summernote_config['width'],
+                'height': summernote_config['height'],
+                'settings': json.dumps(self.template_contexts()),
+            }
+        )
         return mark_safe(html)
 
 
@@ -81,10 +82,10 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
         )}
 
         js = (summernote_config['inplacewidget_external_js']) + (
-            _static_url('django_summernote/summernote.min.js'),
             _static_url('django_summernote/jquery.ui.widget.js'),
             _static_url('django_summernote/jquery.iframe-transport.js'),
             _static_url('django_summernote/jquery.fileupload.js'),
+            _static_url('django_summernote/summernote.js'),
         )
 
     def render(self, name, value, attrs=None):
@@ -94,13 +95,13 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
         html = super(SummernoteInplaceWidget, self).render(name,
                                                            value,
                                                            attrs_for_textarea)
-
         html += render_to_string(
             'django_summernote/widget_inplace.html',
             Context(dict({
-                'STATIC_URL': settings.STATIC_URL,
-                'value': value if value else '',
                 'id': attrs['id'],
-            }, **self.template_contexts()))
+                'value': value if value else '',
+                'settings': json.dumps(self.template_contexts()),
+                'STATIC_URL': settings.STATIC_URL,
+            }))
         )
         return mark_safe(html)
