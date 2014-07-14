@@ -101,7 +101,6 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'id': attrs['id'],
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
-                'STATIC_URL': settings.STATIC_URL,
             }))
         )
         return mark_safe(html)

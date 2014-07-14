@@ -1,3 +1,4 @@
+{% load staticfiles %}
 <div id='{{ id }}'>{{ value|safe }}</div>
 <script>
 $(function() {
@@ -9,7 +10,7 @@ $(function() {
     // include summernote language pack, synchronously
     if( {{ id }}_settings.lang != 'en-US' ) {
         $.ajaxSetup({async:false});
-        $.getScript('{{ STATIC_URL }}django_summernote/lang/summernote-' + {{ id }}_settings.lang + '.js');
+        $.getScript('{% static "django_summernote/lang/summernote-" %}' + {{ id }}_settings.lang + '.js');
         $.ajaxSetup({async:true});
     }
 

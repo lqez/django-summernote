@@ -1,3 +1,4 @@
+{% load staticfiles %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -9,16 +10,16 @@
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
 
         <!-- include jQuery File Upload js -->
-        <script src="{{ STATIC_URL }}django_summernote/jquery.ui.widget.js"></script>
-        <script src="{{ STATIC_URL }}django_summernote/jquery.iframe-transport.js"></script>
-        <script src="{{ STATIC_URL }}django_summernote/jquery.fileupload.js"></script>
+        <script src="{% static 'django_summernote/jquery.ui.widget.js' %}"></script>
+        <script src="{% static 'django_summernote/jquery.iframe-transport.js' %}"></script>
+        <script src="{% static 'django_summernote/jquery.fileupload.js' %}"></script>
 
         <!-- include summernote css/js -->
-        <script src="{{ STATIC_URL }}django_summernote/summernote.min.js"></script>
-        <link href="{{ STATIC_URL }}django_summernote/summernote.css" rel="stylesheet">
+        <script src="{% static 'django_summernote/summernote.min.js' %}"></script>
+        <link href="{% static 'django_summernote/summernote.css' %}" rel="stylesheet">
 
         <!-- include django-summernote -->
-        <link href="{{ STATIC_URL }}django_summernote/django_summernote.css" rel="stylesheet">
+        <link href="{% static 'django_summernote/django_summernote.css' %}" rel="stylesheet">
     </head>
     <body>
         <div id="summernote"></div>
@@ -35,7 +36,7 @@
         // include summernote language pack, synchronously
         if( settings.lang != 'en-US' ) {
             $.ajaxSetup({async:false});
-            $.getScript('{{ STATIC_URL }}django_summernote/lang/summernote-' + settings.lang + '.js');
+            $.getScript('{% static "django_summernote/lang/summernote-" %}' + settings.lang + '.js');
             $.ajaxSetup({async:true});
         }
 
