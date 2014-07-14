@@ -64,7 +64,8 @@ class SummernoteWidget(SummernoteWidgetBase):
         html += render_to_string(
             'django_summernote/widget_iframe.html',
             {
-                'id': '%s' % (attrs['id']),
+                'id': attrs['id'].replace('-', '_'),
+                'id_src': attrs['id'],
                 'src': url,
                 'attrs': flatatt(final_attrs),
                 'width': summernote_config['width'],
@@ -98,9 +99,11 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
         html += render_to_string(
             'django_summernote/widget_inplace.html',
             Context(dict({
-                'id': attrs['id'],
+                'id': attrs['id'].replace('-', '_'),
+                'id_src': attrs['id'],
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
+                'STATIC_URL': settings.STATIC_URL,
             }))
         )
         return mark_safe(html)

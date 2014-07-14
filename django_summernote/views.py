@@ -8,7 +8,10 @@ def editor(request, id):
     return render(
         request,
         'django_summernote/widget_iframe_editor.html',
-        dict({'id': id})
+        dict({
+            'id_src': id,
+            'id': id.replace('-', '_'),
+        })
     )
 
 
