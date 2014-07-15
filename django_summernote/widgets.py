@@ -86,7 +86,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
             _static_url('django_summernote/jquery.ui.widget.js'),
             _static_url('django_summernote/jquery.iframe-transport.js'),
             _static_url('django_summernote/jquery.fileupload.js'),
-            _static_url('django_summernote/summernote.js'),
+            _static_url('django_summernote/summernote.min.js'),
         )
 
     def render(self, name, value, attrs=None):
