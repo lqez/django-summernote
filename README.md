@@ -69,6 +69,10 @@ And for `ModelForm`,
                 'bar': SummernoteInplaceWidget(),
             }
 
+Last, please don't forget to use `safe` templatetag while displaying in templates.
+
+    {{ foobar|safe }}
+
 
 OPTIONS
 -------
