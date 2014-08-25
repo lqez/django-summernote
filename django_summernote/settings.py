@@ -16,6 +16,7 @@ SETTINGS_DEFAULT = {
     'iframe': True,
     'airMode': False,
     'styleWithSpan': True,
+    'direction': 'ltr',
     'empty': ('<p><br/></p>', '<p><br></p>'),
 
     'width': 720,
@@ -43,6 +44,7 @@ SETTINGS_DEFAULT = {
         'de': 'de-DE',
         'es': 'es-ES',
         'fa': 'fa-IR',
+        'fi': 'fi-FI',
         'fr': 'fr-FR',
         'hu': 'hu-HU',
         'id': 'id-ID',
@@ -55,6 +57,7 @@ SETTINGS_DEFAULT = {
         'pt': 'pt-BR',
         'ro': 'ro-RO',
         'ru': 'ru-RU',
+        'sl': 'sl-SI',
         'sr': 'sr-RS',
         'sv': 'sv-SE',
         'tr': 'tr-TR',

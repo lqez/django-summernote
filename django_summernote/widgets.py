@@ -32,6 +32,7 @@ class SummernoteWidgetBase(forms.Textarea):
             'lang': _get_proper_language(),
             'airMode': summernote_config['airMode'],
             'styleWithSpan': summernote_config['styleWithSpan'],
+            'direction': summernote_config['direction'],
             'height': summernote_config['height'],
             'url': {
                 'upload_attachment':

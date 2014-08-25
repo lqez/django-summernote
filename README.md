@@ -93,6 +93,9 @@ In settings.py,
         # (Firefox, Chrome only)
         'styleWithTags': True,
 
+        # Set text direction : 'left to right' is default.
+        'direction': 'ltr',
+
         # Change editor size
         'width': '100%',
         'height': '480',

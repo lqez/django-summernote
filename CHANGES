@@ -1,4 +1,5 @@
-0.5.13 - Fix several javascript bugs and bump summernote version.
+0.5.14 - Bump summernote version with text direction support
+0.5.13 - Fix several javascript bugs and bump summernote version
 0.5.12 - Add a gateway to setup each summernote with different options
 0.5.11 - Update font-awesome and bootstrap files to latest
 0.5.10 - Add support for serving proper language automatically
