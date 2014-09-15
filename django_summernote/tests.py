@@ -91,15 +91,19 @@ class DjangoSummernoteTest(TestCase):
         summernote_config['attachment_storage_class'] = \
             'django.core.files.storage.DefaultStorage'
 
-        # reloading module to apply custom stroage class
-        from django_summernote import models
-        reload(models)
+        from django_summernote.models import \
+            Attachment, _get_attachment_storage
+        file_field = Attachment._meta.get_field_by_name('file')[0]
+        original_storage = file_field.storage
+        file_field.storage = _get_attachment_storage()
 
         url = reverse('django_summernote-upload_attachment')
 
         with open(__file__, 'rb') as fp:
             response = self.client.post(url, {'files': [fp]})
             self.assertEqual(response.status_code, 200)
+
+        file_field.storage = original_storage
 
     def test_attachment_with_bad_storage(self):
         from django.core.exceptions import ImproperlyConfigured

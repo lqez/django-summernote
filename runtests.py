@@ -1,10 +1,14 @@
-import os, sys
+import os
+import sys
 os.environ['DJANGO_SETTINGS_MODULE'] = 'django_summernote.test_settings'
 test_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, test_dir)
 
 from django.test.utils import get_runner
 from django.conf import settings
+import django
+django.setup()
+
 
 def runtests():
     TestRunner = get_runner(settings)
