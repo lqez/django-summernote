@@ -72,6 +72,7 @@ class SummernoteWidget(SummernoteWidgetBase):
                 'width': summernote_config['width'],
                 'height': summernote_config['height'],
                 'settings': json.dumps(self.template_contexts()),
+                'STATIC_URL': settings.STATIC_URL,
             }
         )
         return mark_safe(html)
