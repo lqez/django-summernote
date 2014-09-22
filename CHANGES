@@ -1,3 +1,4 @@
+0.5.15 - Add support for Django 1.7 and drops Python 2.6
 0.5.14 - Bump summernote version with text direction support
 0.5.13 - Fix several javascript bugs and bump summernote version
 0.5.12 - Add a gateway to setup each summernote with different options
