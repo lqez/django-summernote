@@ -57,6 +57,39 @@ class DjangoSummernoteTest(TestCase):
         assert url in html
         assert 'id="id_foobar"' in html
 
+    def test_formfield(self):
+        from django import forms
+        from django_summernote.fields import SummernoteTextFormField
+
+        class SimpleForm(forms.Form):
+            foobar = SummernoteTextFormField()
+
+        f = SimpleForm()
+        html = f.as_p()
+        url = reverse('django_summernote-editor', kwargs={'id': 'id_foobar'})
+
+        assert url in html
+        assert 'id="id_foobar"' in html
+
+    def test_field(self):
+        from django import forms
+        from django.db import models
+        from django_summernote.fields import SummernoteTextField
+
+        class SimpleModel1(models.Model):
+            foobar = SummernoteTextField()
+
+        class SimpleForm(forms.ModelForm):
+            class Meta:
+                model = SimpleModel1
+
+        f = SimpleForm()
+        html = f.as_p()
+        url = reverse('django_summernote-editor', kwargs={'id': 'id_foobar'})
+
+        assert url in html
+        assert 'id="id_foobar"' in html
+
     def test_empty(self):
         from django import forms
         from django_summernote.widgets import SummernoteWidget
@@ -206,12 +239,12 @@ class DjangoSummernoteTest(TestCase):
         class SimpleParentModel(models.Model):
             foobar = models.TextField()
 
-        class SimpleModel(models.Model):
+        class SimpleModel2(models.Model):
             foobar = models.TextField()
             parent = models.ForeignKey(SimpleParentModel)
 
         class SimpleModelInline(SummernoteInlineModelAdmin):
-            model = SimpleModel
+            model = SimpleModel2
 
         class SimpleParentModelAdmin(SummernoteModelAdmin):
             inlines = [SimpleModelInline]
