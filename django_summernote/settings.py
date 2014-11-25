@@ -46,6 +46,7 @@ SETTINGS_DEFAULT = {
         'fa': 'fa-IR',
         'fi': 'fi-FI',
         'fr': 'fr-FR',
+        'he': 'he-IL',
         'hu': 'hu-HU',
         'id': 'id-ID',
         'it': 'it-IT',
@@ -66,7 +67,6 @@ SETTINGS_DEFAULT = {
         'uk': 'uk-UA',
         'vi': 'vi-VN',
         'zh': 'zh-CN',
-        'zh': 'zh-TW',
     },
 
     'attachment_upload_to': uploaded_filepath,
