@@ -82,7 +82,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
     class Media:
         css = {'all': (summernote_config['inplacewidget_external_css']) + (
             _static_url('django_summernote/summernote.css'),
-            _static_url('django_summernote/django-summernote.css'),
+            _static_url('django_summernote/django_summernote.css'),
         )}
 
         js = (summernote_config['inplacewidget_external_js']) + (
