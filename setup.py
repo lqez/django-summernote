@@ -40,7 +40,7 @@ setup(
     author_email='ez.amiryo' '@' 'gmail.com',
     maintainer='Park Hyunwoo',
     maintainer_email='ez.amiryo' '@' 'gmail.com',
-    url='http://github.com/lqez/django-summernote',
+    url='http://github.com/summernote/django-summernote',
 
     description='Summernote plugin for Django',
     classifiers=CLASSIFIERS,
