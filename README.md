@@ -1,7 +1,7 @@
 django-summernote
 =================
-[![Build Status](https://travis-ci.org/lqez/django-summernote.svg?branch=master)](https://travis-ci.org/lqez/django-summernote)
-[![Coverage Status](https://img.shields.io/coveralls/lqez/django-summernote.svg)](https://coveralls.io/r/lqez/django-summernote?branch=master)
+[![Build Status](https://travis-ci.org/summernote/django-summernote.svg?branch=master)](https://travis-ci.org/summernote/django-summernote)
+[![Coverage Status](https://img.shields.io/coveralls/summernote/django-summernote.svg)](https://coveralls.io/r/summernote/django-summernote?branch=master)
 
 [Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor.
 
