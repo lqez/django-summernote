@@ -33,6 +33,7 @@ class SummernoteWidgetBase(forms.Textarea):
             'airMode': summernote_config['airMode'],
             'styleWithSpan': summernote_config['styleWithSpan'],
             'direction': summernote_config['direction'],
+            'width': summernote_config['width'],
             'height': summernote_config['height'],
             'url': {
                 'upload_attachment':
@@ -82,7 +83,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
     class Media:
         css = {'all': (summernote_config['inplacewidget_external_css']) + (
             _static_url('django_summernote/summernote.css'),
-            _static_url('django_summernote/django_summernote.css'),
+            _static_url('django_summernote/django_summernote_inplace.css'),
         )}
 
         js = (summernote_config['inplacewidget_external_js']) + (
