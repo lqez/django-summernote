@@ -46,5 +46,5 @@ setup(
     classifiers=CLASSIFIERS,
 
     test_suite='runtests.runtests',
-    tests_require=['django', 'django-dummy-plug', ],
+    tests_require=['Django', 'django-dummy-plug', ],
 )
