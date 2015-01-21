@@ -1,0 +1,11 @@
+.note-editor {
+    display: inline-block;
+}
+
+
+form .aligned div.note-editable p,
+form .aligned div.note-editable ul
+{
+    padding-left: 0;
+    margin-left: 2px;
+}
