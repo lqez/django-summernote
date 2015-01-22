@@ -115,6 +115,9 @@ In settings.py,
             ['insert', ['link']],
         ],
 
+        # Need authentication while uploading attachments.
+        'attachment_require_authentication': True,
+
         # Set `upload_to` function for attachments.
         'attachment_upload_to': my_custom_upload_to_func(),
 

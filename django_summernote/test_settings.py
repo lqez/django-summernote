@@ -6,9 +6,11 @@ DATABASES = {
 }
 
 MIDDLEWARE_CLASSES = (
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 )
 
 STATIC_URL = '/'
@@ -19,6 +21,9 @@ SECRET_KEY = 'django_summernote'
 ROOT_URLCONF = 'django_summernote.urls'
 
 INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django_summernote',
 )

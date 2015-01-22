@@ -1,4 +1,8 @@
-from django.http import HttpResponseBadRequest, HttpResponseServerError
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+    HttpResponseForbidden,
+)
 from django.shortcuts import render
 from django_summernote.models import Attachment
 from django_summernote.settings import summernote_config
@@ -18,6 +22,10 @@ def editor(request, id):
 def upload_attachment(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('Only POST method is allowed')
+
+    if summernote_config['attachment_require_authentication']:
+        if not request.user.is_authenticated():
+            return HttpResponseForbidden('Only authenticated users are allowed')
 
     if not request.FILES.getlist('files'):
         return HttpResponseBadRequest('No files were requested')

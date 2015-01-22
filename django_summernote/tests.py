@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, Client
 from django_summernote.settings import summernote_config
 from imp import reload
 
 
 class DjangoSummernoteTest(TestCase):
     def setUp(self):
+        self.username = 'lqez'
+        self.password = 'ohmygoddess'
         self.site = AdminSite()
 
     def test_base(self):
@@ -203,6 +206,37 @@ class DjangoSummernoteTest(TestCase):
             self.assertNotEqual(response.status_code, 200)
 
         summernote_config['attachment_filesize_limit'] = old_limit
+
+    def test_attachment_require_authentication(self):
+        url = reverse('django_summernote-upload_attachment')
+        summernote_config['attachment_require_authentication'] = True
+
+        self.user = User.objects.create_user(
+            username=self.username, password=self.password)
+
+        with open(__file__, 'rb') as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertEqual(response.status_code, 403)
+
+        c = Client()
+        c.login(username=self.username, password=self.password)
+
+        with open(__file__, 'rb') as fp:
+            response = c.post(url, {'files': [fp]})
+            self.assertEqual(response.status_code, 200)
+
+        summernote_config['attachment_require_authentication'] = False
+
+    def test_attachment_not_require_authentication(self):
+        url = reverse('django_summernote-upload_attachment')
+        summernote_config['attachment_require_authentication'] = False
+
+        self.user = User.objects.create_user(
+            username=self.username, password=self.password)
+
+        with open(__file__, 'rb') as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertEqual(response.status_code, 200)
 
     def test_lang_specified(self):
         old_lang = summernote_config['lang']

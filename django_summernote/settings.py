@@ -72,6 +72,7 @@ SETTINGS_DEFAULT = {
     'attachment_upload_to': uploaded_filepath,
     'attachment_storage_class': None,
     'attachment_filesize_limit': 1024 * 1024,
+    'attachment_require_authentication': False,
 
     'inplacewidget_external_css': (
         '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
