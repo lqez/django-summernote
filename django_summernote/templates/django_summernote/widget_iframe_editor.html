@@ -28,6 +28,7 @@
     </body>
     <script>
     $(function() {
+        var iframe = window.parent.document.getElementById('{{ id }}_iframe');
         var src = window.parent.document.getElementById('{{ id_src }}');
         var imageInput = null;
         $(src).hide(); // for IE
@@ -56,13 +57,14 @@
                 var nToolbar = $('.note-toolbar');
                 var nEditable = $('.note-editable');
                 var setHeight = parseInt(
-                                            settings.height  // default
-                                            - nToolbar.outerHeight()  // toolbar height including margin,border,padding
-                                            - (nEditable.innerHeight() - nEditable.height())  // editable's padding
-                                            - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
-                                        );
+                    settings.height  // default
+                    - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                    - (nEditable.innerHeight() - nEditable.height())  // editable's padding
+                    - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
+                );
                 
                 nEditable.height(setHeight);
+                $(iframe).height(settings.height);
             },
             onblur: function() {
                 src.value = $("#summernote").code();
