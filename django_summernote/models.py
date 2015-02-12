@@ -49,3 +49,6 @@ class Attachment(models.Model):
         storage=_get_attachment_storage()
     )
     uploaded = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
