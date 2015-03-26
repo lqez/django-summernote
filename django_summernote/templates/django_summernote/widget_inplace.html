@@ -24,6 +24,19 @@ $(function() {
         direction: {{ id }}_settings.direction,
         toolbar: {{ id }}_settings.toolbar,
         lang: {{ id }}_settings.lang,
+        oninit: function() {
+            var nEditor = $('.note-editor');
+            var nToolbar = $('.note-toolbar');
+            var nEditable = $('.note-editable');
+            var nStatusbar = $('.note-statusbar');
+            var setHeight = parseInt({{ id }}_settings.height)  // default
+                    - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                    - (nEditable.innerHeight() - nEditable.height())  // editable's padding
+                    - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
+                    - nStatusbar.outerHeight();  // status bar height
+
+            nEditable.height(setHeight);
+        },
         onblur: function() {
             {{ id }}_textarea.value = $(this).code();
         },
