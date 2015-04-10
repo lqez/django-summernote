@@ -33,8 +33,8 @@ class SummernoteWidgetBase(forms.Textarea):
             'airMode': summernote_config['airMode'],
             'styleWithSpan': summernote_config['styleWithSpan'],
             'direction': summernote_config['direction'],
-            'width': summernote_config['width'],
-            'height': summernote_config['height'],
+            'width': self.attrs.get('width', summernote_config['width']),
+            'height': self.attrs.get('height', summernote_config['height']),
             'url': {
                 'upload_attachment':
                 reverse('django_summernote-upload_attachment'),
