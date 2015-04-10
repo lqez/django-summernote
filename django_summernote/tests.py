@@ -85,6 +85,7 @@ class DjangoSummernoteTest(TestCase):
         class SimpleForm(forms.ModelForm):
             class Meta:
                 model = SimpleModel1
+                fields = "__all__"
 
         f = SimpleForm()
         html = f.as_p()
