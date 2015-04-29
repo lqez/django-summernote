@@ -6,7 +6,7 @@ from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django_summernote.settings import summernote_config
 from django.conf import settings
 
