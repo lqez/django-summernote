@@ -1,3 +1,4 @@
+0.6.7 - Update summernote with 0.6.7 and fix non-backward-compatible changes
 0.6.6 - Update summernote with 0.6.6
 0.6.3 - Fix size problem of inplace widget
 0.6.2 - Add authentication while uploading attachments

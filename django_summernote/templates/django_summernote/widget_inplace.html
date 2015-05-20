@@ -16,7 +16,8 @@ $(function() {
 
     $({{ id }}_textarea).hide();
 
-    $({{ id }}_src).summernote({
+    $summernote = $({{ id }}_src);
+    $summernote.summernote({
         width: {{ id }}_settings.width,
         height: {{ id }}_settings.height,
         airMode: {{ id }}_settings.airMode == 'true',
@@ -40,8 +41,9 @@ $(function() {
         onBlur: function() {
             {{ id }}_textarea.value = $(this).code();
         },
-        onImageUpload: function(files, editor, position) {
+        onImageUpload: function(files) {
             var imageInput = $('.note-image-input');
+            var sn = $(this);
             imageInput.fileupload();
             var jqXHR = imageInput.fileupload('send', 
                 {
@@ -52,7 +54,7 @@ $(function() {
                 .success(function (result, textStatus, jqXHR) {
                     data = $.parseJSON(result);
                     $.each(data.files, function (index, file) {
-                        editor.insertImage(position, file.url);
+                        sn.summernote("insertImage", file.url);
                     });
                 })
                 .error(function (jqXHR, textStatus, errorThrown) {

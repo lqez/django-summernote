@@ -16,7 +16,6 @@
 
         <!-- include summernote css/js -->
         <script src="{% static 'django_summernote/summernote.min.js' %}"></script>
-        <script src="{% static 'django_summernote/plugin/summernote-ext-fontstyle.js' %}"></script>
         <script src="{% static 'django_summernote/plugin/summernote-ext-video.js' %}"></script>
         <link href="{% static 'django_summernote/summernote.css' %}" rel="stylesheet">
 
@@ -69,7 +68,8 @@
             onBlur: function() {
                 src.value = $("#summernote").code();
             },
-            onImageUpload: function(files, editor, position) {
+            onImageUpload: function(files) {
+                var sn = $(this);
                 imageInput = $('.note-image-input');
                 imageInput.fileupload();
                 var jqXHR = imageInput.fileupload('send', 
@@ -81,7 +81,7 @@
                     .success(function (result, textStatus, jqXHR) {
                         data = $.parseJSON(result);
                         $.each(data.files, function (index, file) {
-                            editor.insertImage(position, file.url);
+                            sn.summernote("insertImage", file.url);
                         });
                     })
                     .error(function (jqXHR, textStatus, errorThrown) {
