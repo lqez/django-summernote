@@ -52,7 +52,7 @@
             direction: settings.direction,
             toolbar: settings.toolbar,
             lang: settings.lang,
-            oninit: function() {
+            onInit: function() {
                 var nEditor = $('.note-editor');
                 var nToolbar = $('.note-toolbar');
                 var nEditable = $('.note-editable');
@@ -66,7 +66,7 @@
                 nEditable.height(setHeight);
                 $(iframe).height(settings.height);
             },
-            onblur: function() {
+            onBlur: function() {
                 src.value = $("#summernote").code();
             },
             onImageUpload: function(files, editor, position) {
