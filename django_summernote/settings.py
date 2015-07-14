@@ -16,6 +16,7 @@ SETTINGS_DEFAULT = {
     'iframe': True,
     'airMode': False,
     'styleWithSpan': True,
+    'prettifyHtml': False,
     'direction': 'ltr',
     'empty': ('<p><br/></p>', '<p><br></p>'),
 
