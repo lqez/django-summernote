@@ -85,8 +85,15 @@
                         });
                     })
                     .error(function (jqXHR, textStatus, errorThrown) {
-                        // TODO: Display a detailed error message. It will come from JSON.
-                        alert( 'Got an error while uploading images.' );
+                        // if the error message from the server has any text in it, show it
+                        var msg = jqXHR.responseText;
+                        if (msg.length > 0) {
+                            alert('Got an error uploading an image: ' + msg);
+                        }
+                        // otherwise, show something generic
+                        else {
+                            alert('Got an error while uploading images.');
+                        }
                     });
             }
         });
