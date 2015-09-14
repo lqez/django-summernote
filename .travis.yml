@@ -3,8 +3,13 @@ python:
   - 2.7
   - 3.3
   - 3.4
+env:
+  - DJANGO=1.8
+  - DJANGO=1.9
+  - DJANGO=2.0
 install:
-  pip install coveralls
+  pip install -q "django<$DJANGO"
+  pip install -q coveralls
 script:
   coverage run setup.py test
 after_success:
