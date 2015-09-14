@@ -8,8 +8,9 @@ env:
   - DJANGO=1.9
   - DJANGO=2.0
 install:
-  pip install -q "django<$DJANGO"
-  pip install -q coveralls
+  - pip install -q -U pip    
+  - pip install -q "django<$DJANGO"
+  - pip install -q coveralls
 script:
   coverage run setup.py test
 after_success:
