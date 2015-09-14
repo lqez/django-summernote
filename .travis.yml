@@ -1,10 +1,17 @@
+sudo: false
 language: python
 python:
   - 2.7
   - 3.3
   - 3.4
+env:
+  - DJANGO_VERSION_LT=1.8
+  - DJANGO_VERSION_LT=1.9
+  - DJANGO_VERSION_LT=2.0
 install:
-  pip install coveralls
+  - pip install -q -U pip    
+  - pip install -q coveralls
+  - pip install "django<$DJANGO_VERSION_LT"
 script:
   coverage run setup.py test
 after_success:
