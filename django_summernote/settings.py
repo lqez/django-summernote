@@ -53,6 +53,7 @@ SETTINGS_DEFAULT = {
         'it': 'it-IT',
         'ja': 'ja-JP',
         'ko': 'ko-KR',
+        'lt': 'lt-LT',
         'nb': 'nb-NO',
         'nl': 'nl-NL',
         'pl': 'pl-PL',
