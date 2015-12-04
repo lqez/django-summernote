@@ -16,7 +16,6 @@
 
         <!-- include summernote css/js -->
         <script src="{% static 'django_summernote/summernote.min.js' %}"></script>
-        <script src="{% static 'django_summernote/plugin/summernote-ext-video.js' %}"></script>
         <link href="{% static 'django_summernote/summernote.css' %}" rel="stylesheet">
 
         <!-- include django-summernote -->
@@ -52,50 +51,52 @@
             prettifyHtml: settings.prettifyHtml == 'true',
             toolbar: settings.toolbar,
             lang: settings.lang,
-            onInit: function() {
-                var nEditor = $('.note-editor');
-                var nToolbar = $('.note-toolbar');
-                var nEditable = $('.note-editable');
-                var setHeight = parseInt(
-                    settings.height  // default
-                    - nToolbar.outerHeight()  // toolbar height including margin,border,padding
-                    - (nEditable.innerHeight() - nEditable.height())  // editable's padding
-                    - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
-                );
-                
-                nEditable.height(setHeight);
-                $(iframe).height(settings.height);
-            },
-            onBlur: function() {
-                src.value = $("#summernote").code();
-            },
-            onImageUpload: function(files) {
-                var sn = $(this);
-                imageInput = $('.note-image-input');
-                imageInput.fileupload();
-                var jqXHR = imageInput.fileupload('send', 
-                    {
-                        files: files,
-                        formData: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-                        url: settings.url.upload_attachment,
-                    })
-                    .success(function (result, textStatus, jqXHR) {
-                        data = $.parseJSON(result);
-                        $.each(data.files, function (index, file) {
-                            sn.summernote("insertImage", file.url);
+            callbacks: {
+                onInit: function() {
+                    var nEditor = $('.note-editor');
+                    var nToolbar = $('.note-toolbar');
+                    var nEditable = $('.note-editable');
+                    var setHeight = parseInt(
+                        settings.height  // default
+                        - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                        - (nEditable.innerHeight() - nEditable.height())  // editable's padding
+                        - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
+                    );
+                    
+                    nEditable.outerHeight(setHeight);
+                    $(iframe).height(settings.height);
+                },
+                onBlur: function() {
+                    src.value = $("#summernote").summernote('code');
+                },
+                onImageUpload: function(files) {
+                    var sn = $(this);
+                    imageInput = $('.note-image-input');
+                    imageInput.fileupload();
+                    var jqXHR = imageInput.fileupload('send', 
+                        {
+                            files: files,
+                            formData: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+                            url: settings.url.upload_attachment,
+                        })
+                        .success(function (result, textStatus, jqXHR) {
+                            data = $.parseJSON(result);
+                            $.each(data.files, function (index, file) {
+                                sn.summernote("insertImage", file.url);
+                            });
+                        })
+                        .error(function (jqXHR, textStatus, errorThrown) {
+                            // if the error message from the server has any text in it, show it
+                            var msg = jqXHR.responseText;
+                            if (msg.length > 0) {
+                                alert('Got an error uploading an image: ' + msg);
+                            }
+                            // otherwise, show something generic
+                            else {
+                                alert('Got an error while uploading images.');
+                            }
                         });
-                    })
-                    .error(function (jqXHR, textStatus, errorThrown) {
-                        // if the error message from the server has any text in it, show it
-                        var msg = jqXHR.responseText;
-                        if (msg.length > 0) {
-                            alert('Got an error uploading an image: ' + msg);
-                        }
-                        // otherwise, show something generic
-                        else {
-                            alert('Got an error while uploading images.');
-                        }
-                    });
+                 }
             }
         });
 
