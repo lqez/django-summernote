@@ -4,7 +4,7 @@ django-summernote
 [![Coverage Status](https://img.shields.io/coveralls/summernote/django-summernote.svg)](https://coveralls.io/r/summernote/django-summernote?branch=master)
 [![PyPI Download per month](https://img.shields.io/pypi/dm/django-summernote.svg)](https://pypi.python.org/pypi/django-summernote)
 
-[Summernote](https://github.com/HackerWins/summernote) is a simple WYSIWYG editor.
+[Summernote](https://github.com/summernote/summernote) is a simple WYSIWYG editor.
 
 `django-summernote` allows you to embed Summernote into Django very handy. Support admin mixins and widgets.
 
