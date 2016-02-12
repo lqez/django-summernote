@@ -136,9 +136,9 @@ In settings.py,
         ),
     }
 
-  - About language/locale: [Summernote i18n section](http://hackerwins.github.io/summernote/features.html#i18n-language)
-  - About Air-mode, see [Summernote air-mode example page](http://hackerwins.github.io/summernote/example.html#airmode).
-  - About toolbar customization, please refer [Summernote toolbar section](http://hackerwins.github.io/summernote/features.html#customtoolbar).
+  - About language/locale: [Summernote i18n section](http://summernote.org/getting-started/#i18n-support)
+  - About Air-mode, see [Summernote air-mode example page](http://summernote.org/examples/#air-mode).
+  - About toolbar customization, please refer [Summernote toolbar section](http://summernote.org/deep-dive/#custom-toolbar-popover).
 
 Or, you can styling editor via attributes of the widget. These adhoc styling will override settings from `SUMMERNOTE_CONFIG`.
 
