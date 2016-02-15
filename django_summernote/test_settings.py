@@ -27,3 +27,10 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_summernote',
 )
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]
