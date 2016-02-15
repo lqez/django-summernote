@@ -130,7 +130,7 @@ class DjangoSummernoteTest(TestCase):
 
         from django_summernote.models import \
             Attachment, _get_attachment_storage
-        file_field = get_attachment_model()._meta.get_field_by_name('file')[0]
+        file_field = get_attachment_model()._meta.get_field('file')
         original_storage = file_field.storage
         file_field.storage = _get_attachment_storage()
 
@@ -170,7 +170,7 @@ class DjangoSummernoteTest(TestCase):
         # IOError with patching storage class
         from django_summernote.models import Attachment
         from dummyplug.storage import IOErrorStorage
-        file_field = get_attachment_model()._meta.get_field_by_name('file')[0]
+        file_field = get_attachment_model()._meta.get_field('file')
         original_storage = file_field.storage
         file_field.storage = IOErrorStorage()
 

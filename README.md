@@ -155,8 +155,6 @@ You can also pass additional parameters to custom `Attachment` model by adding a
     class SomeForm(forms.Form):
         foo = forms.CharField(widget=SummernoteWidget(attrs={'data-user-id': 123456, 'data-device': 'iphone'}))
 
-(TODO) Document for addtional settings will be added, soon. :^D
-
 
 AUTHOR
 ------

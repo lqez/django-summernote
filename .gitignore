@@ -29,6 +29,7 @@ nosetests.xml
 test_media
 .coveralls.yml
 coverage.xml
+.python-version
 
 # Translations
 *.mo
