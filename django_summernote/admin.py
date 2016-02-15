@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
 from django_summernote.models import Attachment
-from django_summernote.settings import summernote_config
+from django_summernote.settings import summernote_config, get_attachment_model
 
 __widget__ = SummernoteWidget if summernote_config['iframe'] \
     else SummernoteInplaceWidget
@@ -21,4 +21,4 @@ class AttachmentAdmin(admin.ModelAdmin):
     search_fields = ['name']
     ordering = ('-id',)
 
-admin.site.register(Attachment, AttachmentAdmin)
+admin.site.register(get_attachment_model(), AttachmentAdmin)

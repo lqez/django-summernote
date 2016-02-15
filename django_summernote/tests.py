@@ -3,7 +3,7 @@ from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
-from django_summernote.settings import summernote_config
+from django_summernote.settings import summernote_config, get_attachment_model
 from imp import reload
 
 
@@ -130,7 +130,7 @@ class DjangoSummernoteTest(TestCase):
 
         from django_summernote.models import \
             Attachment, _get_attachment_storage
-        file_field = Attachment._meta.get_field_by_name('file')[0]
+        file_field = get_attachment_model()._meta.get_field_by_name('file')[0]
         original_storage = file_field.storage
         file_field.storage = _get_attachment_storage()
 
@@ -170,7 +170,7 @@ class DjangoSummernoteTest(TestCase):
         # IOError with patching storage class
         from django_summernote.models import Attachment
         from dummyplug.storage import IOErrorStorage
-        file_field = Attachment._meta.get_field_by_name('file')[0]
+        file_field = get_attachment_model()._meta.get_field_by_name('file')[0]
         original_storage = file_field.storage
         file_field.storage = IOErrorStorage()
 

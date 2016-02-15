@@ -124,6 +124,9 @@ In settings.py,
         # Set custom storage class for attachments.
         'attachment_storage_class': 'my.custom.storage.class.name',
 
+        # Set custom model for attachments.
+        'attachment_model': 'django_summernote.Attachment',
+
         # Set external media files for SummernoteInplaceWidget.
         # !!! Be sure to put {{ form.media }} in template before initiate summernote.
         'inplacewidget_external_css': (                                             
@@ -142,9 +145,15 @@ In settings.py,
 
 Or, you can styling editor via attributes of the widget. These adhoc styling will override settings from `SUMMERNOTE_CONFIG`.
 
-    # Apply adhoc style via attibutes
+    # Apply adhoc style via attributes
     class SomeForm(forms.Form):
         foo = forms.CharField(widget=SummernoteWidget(attrs={'width': '50%', 'height': '400px'}))
+
+You can also pass additional parameters to custom `Attachment` model by adding attributes to SummernoteWidget or SummernoteInplaceWidget, any attribute starting with `data-` will be pass to the `save(...)` method of custom `Attachment` model as `**kwargs`.
+
+    # Pass additional parameters to Attachment via attributes
+    class SomeForm(forms.Form):
+        foo = forms.CharField(widget=SummernoteWidget(attrs={'data-user-id': 123456, 'data-device': 'iphone'}))
 
 (TODO) Document for addtional settings will be added, soon. :^D
 

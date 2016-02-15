@@ -10,7 +10,7 @@ except ImportError:
 from django_summernote.settings import summernote_config
 
 
-__all__ = ['Attachment', ]
+__all__ = ['AbstractAttachment', 'Attachment', ]
 
 
 # module importer code comes from
@@ -47,7 +47,8 @@ def _get_attachment_storage():
         return default_storage
 
 
-class Attachment(models.Model):
+class AbstractAttachment(models.Model):
+
     name = models.CharField(max_length=255, null=True, blank=True)
     file = models.FileField(
         upload_to=summernote_config['attachment_upload_to'],
@@ -57,3 +58,11 @@ class Attachment(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.name)
+
+    class Meta:
+        abstract = True
+
+
+class Attachment(AbstractAttachment):
+
+    pass

@@ -5,7 +5,7 @@ from django.http import (
 )
 from django.shortcuts import render
 from django_summernote.models import Attachment
-from django_summernote.settings import summernote_config
+from django_summernote.settings import summernote_config, get_attachment_model
 
 
 def editor(request, id):
@@ -34,7 +34,11 @@ def upload_attachment(request):
         attachments = []
 
         for file in request.FILES.getlist('files'):
-            attachment = Attachment()
+
+            # create instance of appropriate attachment class
+            klass = get_attachment_model()
+            attachment = klass()
+
             attachment.file = file
             attachment.name = file.name
 
@@ -43,7 +47,12 @@ def upload_attachment(request):
                     'File size exceeds the limit allowed and cannot be saved'
                 )
 
-            attachment.save()
+            # remove unnecessary CSRF token, if found
+            request.POST.pop("csrfmiddlewaretoken", None)
+            kwargs = request.POST
+            # calling save method with attachment parameters as kwargs
+            attachment.save(**kwargs)
+
             attachments.append(attachment)
 
         return render(request, 'django_summernote/upload_attachment.json', {

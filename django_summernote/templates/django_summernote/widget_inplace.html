@@ -46,11 +46,13 @@ $(function() {
             onImageUpload: function(files) {
                 var imageInput = $('.note-image-input');
                 var sn = $(this);
+                // custom attachment data
+                var attachmentData = {{ id }}_textarea.dataset;
                 imageInput.fileupload();
                 var jqXHR = imageInput.fileupload('send', 
                     {
                         files: files,
-                        formData: {csrfmiddlewaretoken: csrftoken},
+                        formData: $.extend({csrfmiddlewaretoken: csrftoken}, attachmentData),
                         url: {{ id }}_settings.url.upload_attachment,
                     })
                     .success(function (result, textStatus, jqXHR) {

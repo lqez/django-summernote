@@ -1,7 +1,9 @@
 import os
 import uuid
 from datetime import datetime
+from django.apps import apps as django_apps
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 
 def uploaded_filepath(instance, filename):
@@ -9,6 +11,20 @@ def uploaded_filepath(instance, filename):
     filename = "%s.%s" % (uuid.uuid4(), ext)
     today = datetime.now().strftime('%Y-%m-%d')
     return os.path.join('django-summernote', today, filename)
+
+
+def get_attachment_model():
+    """
+    Returns the Attachment model that is active in this project.
+    """
+    try:
+        return django_apps.get_model(summernote_config["attachment_model"])
+    except ValueError:
+        raise ImproperlyConfigured("SUMMERNOTE_CONFIG['attachment_model'] must be of the form 'app_label.model_name'")
+    except LookupError:
+        raise ImproperlyConfigured(
+            "SUMMERNOTE_CONFIG['attachment_model'] refers to model '%s' that has not been installed" % summernote_config["attachment_model"]
+        )
 
 
 SETTINGS_USER = getattr(settings, 'SUMMERNOTE_CONFIG', {})
@@ -75,6 +91,7 @@ SETTINGS_DEFAULT = {
     'attachment_storage_class': None,
     'attachment_filesize_limit': 1024 * 1024,
     'attachment_require_authentication': False,
+    'attachment_model': 'django_summernote.Attachment',
 
     'inplacewidget_external_css': (
         '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
@@ -88,3 +105,4 @@ SETTINGS_DEFAULT = {
 
 summernote_config = SETTINGS_DEFAULT.copy()
 summernote_config.update(SETTINGS_USER)
+
