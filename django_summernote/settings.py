@@ -18,7 +18,14 @@ def get_attachment_model():
     Returns the Attachment model that is active in this project.
     """
     try:
-        return django_apps.get_model(summernote_config["attachment_model"])
+        from models import AbstractAttachment
+        klass = django_apps.get_model(summernote_config["attachment_model"])
+        if not issubclass(klass, AbstractAttachment):
+            raise ImproperlyConfigured(
+                "SUMMERNOTE_CONFIG['attachment_model'] refers to model '%s' that is not "
+                "inherited from 'django_summernote.models.AbstractAttachment'" % summernote_config["attachment_model"]
+            )
+        return klass
     except ValueError:
         raise ImproperlyConfigured("SUMMERNOTE_CONFIG['attachment_model'] must be of the form 'app_label.model_name'")
     except LookupError:

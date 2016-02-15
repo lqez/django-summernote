@@ -182,6 +182,27 @@ class DjangoSummernoteTest(TestCase):
 
         file_field.storage = original_storage
 
+    def test_get_attachment_model(self):
+        from django.core.exceptions import ImproperlyConfigured
+
+        # ValueError
+        summernote_config['attachment_model'] = \
+            'wow_no_dot_model_designation'
+        with self.assertRaises(ImproperlyConfigured):
+            get_attachment_model()
+
+        # LookupError
+        summernote_config['attachment_model'] = \
+            'wow.not.installed.app.model'
+        with self.assertRaises(ImproperlyConfigured):
+            get_attachment_model()
+
+        # Ensures proper inheritance, using built-in User class to test
+        summernote_config['attachment_model'] = \
+            'auth.User'
+        with self.assertRaises(ImproperlyConfigured):
+            get_attachment_model()
+
     def test_attachment_bad_request(self):
         url = reverse('django_summernote-upload_attachment')
         response = self.client.get(url)
