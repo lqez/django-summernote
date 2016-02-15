@@ -25,11 +25,11 @@ SETUP
 
 3. Add `django_summernote.urls` to `urls.py`.
 
-        urlpatterns = patterns('',
+        urlpatterns = [
             ...
-            (r'^summernote/', include('django_summernote.urls')),
+            url(r'^summernote/', include('django_summernote.urls')),
             ...
-        )
+        ]
 
 4. Run `syncdb` for preparing attachment model.
 
