@@ -124,8 +124,8 @@ In settings.py,
         # Set custom storage class for attachments.
         'attachment_storage_class': 'my.custom.storage.class.name',
 
-        # Set custom model for attachments.
-        'attachment_model': 'django_summernote.Attachment',
+        # Set custom model for attachments (default: 'django_summernote.Attachment')
+        'attachment_model': 'my.custom.attachment.model', # must inherit 'django_summernote.AbstractAttachment'
 
         # Set external media files for SummernoteInplaceWidget.
         # !!! Be sure to put {{ form.media }} in template before initiate summernote.
