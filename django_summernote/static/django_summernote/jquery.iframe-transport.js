@@ -1,5 +1,5 @@
 /*
- * jQuery Iframe Transport Plugin 1.8.0
+ * jQuery Iframe Transport Plugin
  * https://github.com/blueimp/jQuery-File-Upload
  *
  * Copyright 2011, Sebastian Tschan
@@ -9,14 +9,16 @@
  * http://www.opensource.org/licenses/MIT
  */
 
-/*jslint unparam: true, nomen: true */
-/*global define, window, document */
+/* global define, require, window, document */
 
 (function (factory) {
     'use strict';
     if (typeof define === 'function' && define.amd) {
         // Register as an anonymous AMD module:
         define(['jquery'], factory);
+    } else if (typeof exports === 'object') {
+        // Node/CommonJS:
+        factory(require('jquery'));
     } else {
         // Browser globals:
         factory(window.jQuery);
@@ -41,7 +43,9 @@
         if (options.async) {
             // javascript:false as initial iframe src
             // prevents warning popups on HTTPS in IE6:
+            /*jshint scripturl: true */
             var initialIframeSrc = options.initialIframeSrc || 'javascript:false;',
+            /*jshint scripturl: false */
                 form,
                 iframe,
                 addParamChar;
@@ -141,6 +145,8 @@
                                 .prop('enctype', 'multipart/form-data')
                                 // enctype must be set as encoding for IE:
                                 .prop('encoding', 'multipart/form-data');
+                            // Remove the HTML5 form attribute from the input(s):
+                            options.fileInput.removeAttr('form');
                         }
                         form.submit();
                         // Insert the file input fields at their original location
@@ -148,7 +154,10 @@
                         if (fileInputClones && fileInputClones.length) {
                             options.fileInput.each(function (index, input) {
                                 var clone = $(fileInputClones[index]);
-                                $(input).prop('name', clone.prop('name'));
+                                // Restore the original name and form properties:
+                                $(input)
+                                    .prop('name', clone.prop('name'))
+                                    .attr('form', clone.attr('form'));
                                 clone.replaceWith(input);
                             });
                         }
