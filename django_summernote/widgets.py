@@ -17,6 +17,7 @@ from django.conf import settings
 __all__ = ['SummernoteWidget', 'SummernoteInplaceWidget']
 
 __summernote_options__ = [
+    'airMode',
     'colors',
     'dialogsFade',
     'dialogsInBody',
@@ -26,6 +27,7 @@ __summernote_options__ = [
     'fontNamesIgnoreCheck',
     'fontSizes',
     'lineHeights',
+    'popover',
     'shortcuts',
     'styleWithSpan',
     'tableClassName',
