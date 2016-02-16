@@ -46,8 +46,8 @@ def _get_proper_language():
 
 
 class SummernoteWidgetBase(forms.Textarea):
-    def sn_settings(self):
-        d = {
+    def template_contexts(self):
+        contexts = {
             'lang': _get_proper_language(),
             'url': {
                 'upload_attachment':
@@ -58,9 +58,9 @@ class SummernoteWidgetBase(forms.Textarea):
         for option in __summernote_options__:
             v = self.attrs.get(option, summernote_config.get(option))
             if v:
-                d[option] = v
+                contexts[option] = v
 
-        return d
+        return contexts
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name, None)
@@ -82,7 +82,7 @@ class SummernoteWidget(SummernoteWidgetBase):
         final_attrs = self.build_attrs(attrs)
         del final_attrs['id']  # Use original attributes without id.
 
-        sn_settings = self.sn_settings()
+        contexts = self.template_contexts()
 
         url = reverse('django_summernote-editor',
                       kwargs={'id': attrs['id']})
@@ -94,9 +94,9 @@ class SummernoteWidget(SummernoteWidgetBase):
                 'id_src': attrs['id'],
                 'src': url,
                 'attrs': flatatt(final_attrs),
-                'width': sn_settings['width'],
-                'height': sn_settings['height'],
-                'settings': json.dumps(sn_settings),
+                'width': contexts['width'],
+                'height': contexts['height'],
+                'settings': json.dumps(contexts),
                 'STATIC_URL': settings.STATIC_URL,
             }
         )
@@ -131,7 +131,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'id': attrs['id'].replace('-', '_'),
                 'id_src': attrs['id'],
                 'value': value if value else '',
-                'settings': json.dumps(self.sn_settings()),
+                'settings': json.dumps(self.template_contexts()),
                 'STATIC_URL': settings.STATIC_URL,
             }))
         )
