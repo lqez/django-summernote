@@ -27,13 +27,13 @@ def get_attachment_model():
         )
 
 
+def static_url(url):
+    return os.path.join(settings.STATIC_URL, url)
+
+
 SETTINGS_USER = getattr(settings, 'SUMMERNOTE_CONFIG', {})
 SETTINGS_DEFAULT = {
     'iframe': True,
-    'airMode': False,
-    'styleWithSpan': True,
-    'prettifyHtml': False,
-    'direction': 'ltr',
     'empty': ('<p><br/></p>', '<p><br></p>'),
 
     'width': 720,
@@ -93,10 +93,25 @@ SETTINGS_DEFAULT = {
     'attachment_require_authentication': False,
     'attachment_model': 'django_summernote.Attachment',
 
-    'inplacewidget_external_css': (
+    'internal_css': (
+        static_url('django_summernote/summernote.css'),
+    ),
+    'internal_css_for_iframe': (
+        static_url('django_summernote/django_summernote.css'),
+    ),
+    'internal_css_for_inplace': (
+        static_url('django_summernote/django_summernote_inplace.css'),
+    ),
+    'internal_js': (
+        static_url('django_summernote/jquery.ui.widget.js'),
+        static_url('django_summernote/jquery.iframe-transport.js'),
+        static_url('django_summernote/jquery.fileupload.js'),
+        static_url('django_summernote/summernote.min.js'),
+    ),
+    'external_css': (
         '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
     ),
-    'inplacewidget_external_js': (
+    'external_js': (
         '//code.jquery.com/jquery-1.9.1.min.js',
         '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
     ),
