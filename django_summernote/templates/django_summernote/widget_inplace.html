@@ -17,15 +17,7 @@ $(function() {
     $({{ id }}_textarea).hide();
 
     $summernote = $({{ id }}_src);
-    $summernote.summernote({
-        width: {{ id }}_settings.width,
-        height: {{ id }}_settings.height,
-        airMode: {{ id }}_settings.airMode == 'true',
-        styleWithSpan: {{ id }}_settings.styleWithSpan == 'true',
-        prettifyHtml: {{ id }}_settings.prettifyHtml == 'true',
-        direction: {{ id }}_settings.direction,
-        toolbar: {{ id }}_settings.toolbar,
-        lang: {{ id }}_settings.lang,
+    $summernote.summernote($.extend({{ id }}_settings, {
         callbacks: {
             onInit: function() {
                 var nEditor = $('.note-editor');
@@ -67,7 +59,7 @@ $(function() {
                     });
             }
         }
-    });
+    }));
 
     // See https://docs.djangoproject.com/en/dev/ref/contrib/csrf/#ajax
     function getCookie(name) {

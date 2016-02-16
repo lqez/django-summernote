@@ -1,5 +1,4 @@
 import json
-import os
 from django import forms
 from django.core.urlresolvers import reverse
 from django.template import Context
@@ -17,9 +16,25 @@ from django.conf import settings
 
 __all__ = ['SummernoteWidget', 'SummernoteInplaceWidget']
 
+__summernote_options__ = [
+    'colors',
+    'dialogsFade',
+    'dialogsInBody',
+    'direction',
+    'focus',
+    'fontNames',
+    'fontNamesIgnoreCheck',
+    'fontSizes',
+    'lineHeights',
+    'shortcuts',
+    'styleWithSpan',
+    'tableClassName',
+    'tabSize',
+    'toolbar',
 
-def _static_url(url):
-    return os.path.join(settings.STATIC_URL, url)
+    'width',
+    'height',
+]
 
 
 def _get_proper_language():
@@ -31,20 +46,21 @@ def _get_proper_language():
 
 
 class SummernoteWidgetBase(forms.Textarea):
-    def template_contexts(self):
-        return {
-            'toolbar': summernote_config['toolbar'],
+    def sn_settings(self):
+        d = {
             'lang': _get_proper_language(),
-            'airMode': summernote_config['airMode'],
-            'styleWithSpan': summernote_config['styleWithSpan'],
-            'direction': summernote_config['direction'],
-            'width': self.attrs.get('width', summernote_config['width']),
-            'height': self.attrs.get('height', summernote_config['height']),
             'url': {
                 'upload_attachment':
                 reverse('django_summernote-upload_attachment'),
             },
         }
+
+        for option in __summernote_options__:
+            v = self.attrs.get(option, summernote_config.get(option))
+            if v:
+                d[option] = v
+
+        return d
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name, None)
@@ -66,8 +82,11 @@ class SummernoteWidget(SummernoteWidgetBase):
         final_attrs = self.build_attrs(attrs)
         del final_attrs['id']  # Use original attributes without id.
 
+        sn_settings = self.sn_settings()
+
         url = reverse('django_summernote-editor',
                       kwargs={'id': attrs['id']})
+
         html += render_to_string(
             'django_summernote/widget_iframe.html',
             {
@@ -75,9 +94,9 @@ class SummernoteWidget(SummernoteWidgetBase):
                 'id_src': attrs['id'],
                 'src': url,
                 'attrs': flatatt(final_attrs),
-                'width': summernote_config['width'],
-                'height': summernote_config['height'],
-                'settings': json.dumps(self.template_contexts()),
+                'width': sn_settings['width'],
+                'height': sn_settings['height'],
+                'settings': json.dumps(sn_settings),
                 'STATIC_URL': settings.STATIC_URL,
             }
         )
@@ -86,16 +105,17 @@ class SummernoteWidget(SummernoteWidgetBase):
 
 class SummernoteInplaceWidget(SummernoteWidgetBase):
     class Media:
-        css = {'all': (summernote_config['inplacewidget_external_css']) + (
-            _static_url('django_summernote/summernote.css'),
-            _static_url('django_summernote/django_summernote_inplace.css'),
-        )}
+        css = {
+            'all': (
+                summernote_config['external_css'] +
+                summernote_config['internal_css'] +
+                summernote_config['internal_css_for_inplace']
+            )
+        }
 
-        js = (summernote_config['inplacewidget_external_js']) + (
-            _static_url('django_summernote/jquery.ui.widget.js'),
-            _static_url('django_summernote/jquery.iframe-transport.js'),
-            _static_url('django_summernote/jquery.fileupload.js'),
-            _static_url('django_summernote/summernote.min.js'),
+        js = (
+            summernote_config['external_js'] +
+            summernote_config['internal_js']
         )
 
     def render(self, name, value, attrs=None):
@@ -111,7 +131,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'id': attrs['id'].replace('-', '_'),
                 'id_src': attrs['id'],
                 'value': value if value else '',
-                'settings': json.dumps(self.template_contexts()),
+                'settings': json.dumps(self.sn_settings()),
                 'STATIC_URL': settings.STATIC_URL,
             }))
         )

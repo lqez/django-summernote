@@ -2,23 +2,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Summernote for django</title>
-        <!-- include libries(jQuery, bootstrap, fontawesome) -->
-        <script src="//code.jquery.com/jquery-1.9.1.min.js"></script> 
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-
-        <!-- include jQuery File Upload js -->
-        <script src="{% static 'django_summernote/jquery.ui.widget.js' %}"></script>
-        <script src="{% static 'django_summernote/jquery.iframe-transport.js' %}"></script>
-        <script src="{% static 'django_summernote/jquery.fileupload.js' %}"></script>
-
-        <!-- include summernote css/js -->
-        <script src="{% static 'django_summernote/summernote.min.js' %}"></script>
-        <link href="{% static 'django_summernote/summernote.css' %}" rel="stylesheet">
-
-        <!-- include django-summernote -->
-        <link href="{% static 'django_summernote/django_summernote.css' %}" rel="stylesheet">
+        <title>django-summernote frame</title>
+        {% for url in css %}
+        <link href="{{ url }}" rel="stylesheet">{% endfor %}
+        {% for url in js %}
+        <script src="{{ url }}"></script>{% endfor %}
     </head>
     <body>
         <div id="summernote"></div>
@@ -31,7 +19,7 @@
         $(src).hide(); // for IE
 
         // get settings from parent window
-        eval("settings = window.parent.settings_{{ id }};");
+        var settings = window.parent.settings_{{ id }};
 
         // include summernote language pack, synchronously
         if( settings.lang != 'en-US' ) {
@@ -42,14 +30,7 @@
 
         $('#summernote').html(src.value);
 
-        $('#summernote').summernote({
-            height: settings.height,
-            airMode: settings.airMode == 'true',
-            styleWithSpan: settings.styleWithSpan == 'true',
-            direction: settings.direction,
-            prettifyHtml: settings.prettifyHtml == 'true',
-            toolbar: settings.toolbar,
-            lang: settings.lang,
+        $('#summernote').summernote($.extend(settings, {
             callbacks: {
                 onInit: function() {
                     var nEditor = $('.note-editor');
@@ -99,7 +80,7 @@
                         });
                  }
             }
-        });
+        }));
 
         // Hide resize bar - resizing iframe is not prepared, yet.
         $('.note-resizebar').hide();

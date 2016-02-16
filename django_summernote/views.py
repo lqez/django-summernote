@@ -4,7 +4,6 @@ from django.http import (
     HttpResponseForbidden,
 )
 from django.shortcuts import render
-from django_summernote.models import Attachment
 from django_summernote.settings import summernote_config, get_attachment_model
 
 
@@ -12,10 +11,19 @@ def editor(request, id):
     return render(
         request,
         'django_summernote/widget_iframe_editor.html',
-        dict({
+        {
             'id_src': id,
             'id': id.replace('-', '_'),
-        })
+            'css': (
+                summernote_config['external_css'] +
+                summernote_config['internal_css'] +
+                summernote_config['internal_css_for_iframe']
+            ),
+            'js': (
+                summernote_config['external_js'] +
+                summernote_config['internal_js']
+            ),
+        }
     )
 
 
