@@ -33,8 +33,8 @@ SETUP
 
 4. Run `syncdb` for preparing attachment model.
 
-        python manage.py syncdb
-
+        python manage.py makemigrations django_summernote
+        python manage.py migrate
 
 USAGE
 -----
