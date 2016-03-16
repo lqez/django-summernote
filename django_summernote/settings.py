@@ -71,6 +71,7 @@ SETTINGS_DEFAULT = {
         'fi': 'fi-FI',
         'fr': 'fr-FR',
         'he': 'he-IL',
+        'hr': 'hr-HR',
         'hu': 'hu-HU',
         'id': 'id-ID',
         'it': 'it-IT',
