@@ -127,15 +127,31 @@ In settings.py,
         # Set custom model for attachments (default: 'django_summernote.Attachment')
         'attachment_model': 'my.custom.attachment.model', # must inherit 'django_summernote.AbstractAttachment'
 
-        # Set external media files for SummernoteInplaceWidget.
-        # !!! Be sure to put {{ form.media }} in template before initiate summernote.
-        'inplacewidget_external_css': (                                             
+        # Set css/js media files
+        'external_css': (                                             
             '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',      
-            '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css',
         ),                                                                          
-        'inplacewidget_external_js': (                                              
+        'external_js': (                                              
             '//code.jquery.com/jquery-1.9.1.min.js',                                
             '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',        
+        ),
+        'internal_css': (
+            static_url('django_summernote/summernote.css'),
+        ),
+        'internal_js': (
+            static_url('django_summernote/jquery.ui.widget.js'),
+            static_url('django_summernote/jquery.iframe-transport.js'),
+            static_url('django_summernote/jquery.fileupload.js'),
+            static_url('django_summernote/summernote.min.js'),
+        ),
+        # for SummernoteWidget.
+        'internal_css_for_iframe': (
+            static_url('django_summernote/django_summernote.css'),
+        ),
+        # for SummernoteInplaceWidget.
+        # !!! Be sure to put {{ form.media }} in template before initiate summernote.
+        'internal_css_for_inplace': (
+            static_url('django_summernote/django_summernote_inplace.css'),
         ),
     }
 
