@@ -49,6 +49,7 @@
                 onBlur: function() {
                     src.value = $("#summernote").summernote('code');
                 },
+                {% if not disable_upload %}
                 onImageUpload: function(files) {
                     var sn = $(this);
                     // custom attachment data
@@ -79,6 +80,7 @@
                             }
                         });
                  }
+                 {% endif %}
             }
         }));
 

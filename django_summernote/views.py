@@ -23,6 +23,7 @@ def editor(request, id):
                 summernote_config['external_js'] +
                 summernote_config['internal_js']
             ),
+            'disable_upload': summernote_config['disable_upload'],
         }
     )
 
