@@ -48,7 +48,37 @@
                 },
                 onBlur: function() {
                     src.value = $("#summernote").summernote('code');
-                }
+                },
+                onImageUpload: function(files) {
+                    var sn = $(this);
+                    // custom attachment data
+                    var attachmentData = src.dataset;
+                    imageInput = $('.note-image-input');
+                    imageInput.fileupload();
+                    var jqXHR = imageInput.fileupload('send', 
+                        {
+                            files: files,
+                            formData: $.extend({csrfmiddlewaretoken: '{{ csrf_token }}'}, attachmentData),
+                            url: settings.url.upload_attachment,
+                        })
+                        .success(function (result, textStatus, jqXHR) {
+                            data = $.parseJSON(result);
+                            $.each(data.files, function (index, file) {
+                                sn.summernote("insertImage", file.url);
+                            });
+                        })
+                        .error(function (jqXHR, textStatus, errorThrown) {
+                            // if the error message from the server has any text in it, show it
+                            var msg = jqXHR.responseText;
+                            if (msg.length > 0) {
+                                alert('Got an error uploading an image: ' + msg);
+                            }
+                            // otherwise, show something generic
+                            else {
+                                alert('Got an error while uploading images.');
+                            }
+                        });
+                 }
             }
         }));
 
