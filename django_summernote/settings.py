@@ -123,6 +123,9 @@ SETTINGS_DEFAULT = {
         '//code.jquery.com/jquery-1.9.1.min.js',
         '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
     ),
+
+    # Disable upload
+    'disable_upload': False,
 }
 
 summernote_config = SETTINGS_DEFAULT.copy()
