@@ -109,15 +109,13 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
     class Media:
         css = {
             'all': (
-                summernote_config['external_css'] +
-                summernote_config['internal_css'] +
+                summernote_config['default_css_for_inplace'] +
                 summernote_config['css_for_inplace']
             )
         }
 
         js = (
-            summernote_config['external_js'] +
-            summernote_config['internal_js'] +
+            summernote_config['default_js_for_inplace'] +
             summernote_config['js_for_inplace']
         )
 

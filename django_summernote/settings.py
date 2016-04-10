@@ -62,6 +62,7 @@ SETTINGS_DEFAULT = {
     'lang': None,
     'lang_matches': {
         'ar': 'ar-AR',
+        'bg': 'bg-BG',
         'ca': 'ca-ES',
         'cs': 'cs-CZ',
         'da': 'da-DK',
@@ -70,6 +71,7 @@ SETTINGS_DEFAULT = {
         'fa': 'fa-IR',
         'fi': 'fi-FI',
         'fr': 'fr-FR',
+        'gl': 'gl-ES',
         'he': 'he-IL',
         'hr': 'hr-HR',
         'hu': 'hu-HU',
@@ -101,32 +103,34 @@ SETTINGS_DEFAULT = {
     'attachment_require_authentication': False,
     'attachment_model': 'django_summernote.Attachment',
 
-    'internal_css': (
+    'default_css': (
+        '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
         static_url('django_summernote/summernote.css'),
+        static_url('django_summernote/django_summernote.css'),
     ),
-    'internal_js': (
+    'default_js': (
+        '//code.jquery.com/jquery-1.9.1.min.js',
+        '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
         static_url('django_summernote/jquery.ui.widget.js'),
         static_url('django_summernote/jquery.iframe-transport.js'),
         static_url('django_summernote/jquery.fileupload.js'),
         static_url('django_summernote/summernote.min.js'),
     ),
-    'external_css': (
-        '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
-    ),
-    'external_js': (
-        '//code.jquery.com/jquery-1.9.1.min.js',
-        '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
-    ),
-    'css_for_iframe': (
-        static_url('django_summernote/django_summernote.css'),
-    ),
-    'js_for_iframe': (
-    ),
-    'css_for_inplace': (
+    'css': (),
+    'js': (),
+
+    'default_css_for_inplace': (
+        static_url('django_summernote/summernote.css'),
         static_url('django_summernote/django_summernote_inplace.css'),
     ),
-    'js_for_inplace': (
+    'default_js_for_inplace': (
+        static_url('django_summernote/jquery.ui.widget.js'),
+        static_url('django_summernote/jquery.iframe-transport.js'),
+        static_url('django_summernote/jquery.fileupload.js'),
+        static_url('django_summernote/summernote.min.js'),
     ),
+    'css_for_inplace': (),
+    'js_for_inplace': (),
     # Disable upload
     'disable_upload': False,
 }

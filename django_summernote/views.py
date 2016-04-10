@@ -15,14 +15,12 @@ def editor(request, id):
             'id_src': id,
             'id': id.replace('-', '_'),
             'css': (
-                summernote_config['external_css'] +
-                summernote_config['internal_css'] +
-                summernote_config['css_for_iframe']
+                summernote_config['default_css'] +
+                summernote_config['css']
             ),
             'js': (
-                summernote_config['external_js'] +
-                summernote_config['internal_js'] +
-                summernote_config['js_for_iframe']
+                summernote_config['default_js'] +
+                summernote_config['js']
             ),
             'disable_upload': summernote_config['disable_upload'],
         }
