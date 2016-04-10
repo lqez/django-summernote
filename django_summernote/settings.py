@@ -104,12 +104,6 @@ SETTINGS_DEFAULT = {
     'internal_css': (
         static_url('django_summernote/summernote.css'),
     ),
-    'internal_css_for_iframe': (
-        static_url('django_summernote/django_summernote.css'),
-    ),
-    'internal_css_for_inplace': (
-        static_url('django_summernote/django_summernote_inplace.css'),
-    ),
     'internal_js': (
         static_url('django_summernote/jquery.ui.widget.js'),
         static_url('django_summernote/jquery.iframe-transport.js'),
@@ -123,7 +117,16 @@ SETTINGS_DEFAULT = {
         '//code.jquery.com/jquery-1.9.1.min.js',
         '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
     ),
-
+    'css_for_iframe': (
+        static_url('django_summernote/django_summernote.css'),
+    ),
+    'js_for_iframe': (
+    ),
+    'css_for_inplace': (
+        static_url('django_summernote/django_summernote_inplace.css'),
+    ),
+    'js_for_inplace': (
+    ),
     # Disable upload
     'disable_upload': False,
 }

@@ -111,13 +111,14 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
             'all': (
                 summernote_config['external_css'] +
                 summernote_config['internal_css'] +
-                summernote_config['internal_css_for_inplace']
+                summernote_config['css_for_inplace']
             )
         }
 
         js = (
             summernote_config['external_js'] +
-            summernote_config['internal_js']
+            summernote_config['internal_js'] +
+            summernote_config['js_for_inplace']
         )
 
     def render(self, name, value, attrs=None):

@@ -127,7 +127,7 @@ In settings.py,
         # Set custom model for attachments (default: 'django_summernote.Attachment')
         'attachment_model': 'my.custom.attachment.model', # must inherit 'django_summernote.AbstractAttachment'
 
-        # Set css/js media files
+        # Set common css/js media files
         'external_css': (                                             
             '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',      
         ),                                                                          
@@ -144,14 +144,20 @@ In settings.py,
             static_url('django_summernote/jquery.fileupload.js'),
             static_url('django_summernote/summernote.min.js'),
         ),
+
         # for SummernoteWidget.
-        'internal_css_for_iframe': (
+        'css_for_iframe': (
             static_url('django_summernote/django_summernote.css'),
         ),
+        'js_for_iframe': (
+        ),
+
         # for SummernoteInplaceWidget.
         # !!! Be sure to put {{ form.media }} in template before initiate summernote.
-        'internal_css_for_inplace': (
+        'css_for_inplace': (
             static_url('django_summernote/django_summernote_inplace.css'),
+        ),
+        'js_for_inplace': (
         ),
     }
 
