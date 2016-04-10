@@ -145,35 +145,25 @@ In settings.py,
             static_url('django_summernote/summernote.min.js'),
         ),
 
-        # for SummernoteWidget.
-        'css_for_iframe': (
-            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
-            static_url('django_summernote/summernote.css'),
-            static_url('django_summernote/django_summernote.css'),
+        # You can add custom css/js for SummernoteWidget.
+        'css': (
         ),
-        'js_for_iframe': (
-            '//code.jquery.com/jquery-1.9.1.min.js',
-            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
-            static_url('django_summernote/jquery.ui.widget.js'),
-            static_url('django_summernote/jquery.iframe-transport.js'),
-            static_url('django_summernote/jquery.fileupload.js'),
-            static_url('django_summernote/summernote.min.js'),
+        'js': (
         ),
 
-        # for SummernoteInplaceWidget.
+        # And also for SummernoteInplaceWidget.
         # !!! Be sure to put {{ form.media }} in template before initiate summernote.
         'css_for_inplace': (
-            static_url('django_summernote/summernote.css'),
-            static_url('django_summernote/django_summernote_inplace.css'),
         ),
         'js_for_inplace': (
-            static_url('django_summernote/jquery.ui.widget.js'),
-            static_url('django_summernote/jquery.iframe-transport.js'),
-            static_url('django_summernote/jquery.fileupload.js'),
-            static_url('django_summernote/summernote.min.js'),
         ),
+
+        # You can disable file upload feature.
+        'disable_upload': False,
     }
 
+  - There are pre-defined css/js files for widgets.
+    - See them at [summernote default settings](https://github.com/summernote/django-summernote/blob/master/django_summernote/settings.py#L106-L133)
   - About language/locale: [Summernote i18n section](http://summernote.org/getting-started/#i18n-support)
   - About Air-mode, see [Summernote air-mode example page](http://summernote.org/examples/#air-mode).
   - About toolbar customization, please refer [Summernote toolbar section](http://summernote.org/deep-dive/#custom-toolbar-popover).
