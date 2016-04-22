@@ -180,6 +180,10 @@ You can also pass additional parameters to custom `Attachment` model by adding a
     class SomeForm(forms.Form):
         foo = forms.CharField(widget=SummernoteWidget(attrs={'data-user-id': 123456, 'data-device': 'iphone'}))
 
+LIMITATIONS
+-----------
+
+`django-summernote` does currently not support upload of non-image files.
 
 AUTHOR
 ------
