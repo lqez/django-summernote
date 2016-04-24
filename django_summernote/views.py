@@ -5,7 +5,7 @@ from django.http import (
 )
 from django.shortcuts import render
 from django_summernote.settings import summernote_config, get_attachment_model
-
+from django.utils.translation import ugettext_lazy as _
 
 def editor(request, id):
     return render(
@@ -29,14 +29,14 @@ def editor(request, id):
 
 def upload_attachment(request):
     if request.method != 'POST':
-        return HttpResponseBadRequest('Only POST method is allowed')
+        return HttpResponseBadRequest(_('Only POST method is allowed'))
 
     if summernote_config['attachment_require_authentication']:
         if not request.user.is_authenticated():
-            return HttpResponseForbidden('Only authenticated users are allowed')
+            return HttpResponseForbidden(_('Only authenticated users are allowed'))
 
     if not request.FILES.getlist('files'):
-        return HttpResponseBadRequest('No files were requested')
+        return HttpResponseBadRequest(_('No files were requested'))
 
     try:
         attachments = []
@@ -52,7 +52,7 @@ def upload_attachment(request):
 
             if file.size > summernote_config['attachment_filesize_limit']:
                 return HttpResponseBadRequest(
-                    'File size exceeds the limit allowed and cannot be saved'
+                    _('File size exceeds the limit allowed and cannot be saved')
                 )
 
             # remove unnecessary CSRF token, if found
@@ -67,4 +67,4 @@ def upload_attachment(request):
             'attachments': attachments,
         })
     except IOError:
-        return HttpResponseServerError('Failed to save attachment')
+        return HttpResponseServerError(_('Failed to save attachment'))
