@@ -102,7 +102,7 @@ In settings.py,
         'height': '480',
 
         # Use proper language setting automatically (default)
-        'lang': None
+        'lang': None,
 
         # Or, set editor language/locale forcely
         'lang': 'ko-KR',
