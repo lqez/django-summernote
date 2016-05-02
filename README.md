@@ -31,9 +31,11 @@ SETUP
             ...
         ]
 
-4. Run `syncdb` for preparing attachment model.
+4. Be sure to set proper `MEDIA_URL` for attachments.
+     - <https://docs.djangoproject.com/en/1.9/topics/files/>
 
-        python manage.py makemigrations django_summernote
+5. Run database migration for preparing attachment model.
+
         python manage.py migrate
 
 USAGE
