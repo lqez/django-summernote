@@ -1,7 +1,6 @@
 django-summernote
 =================
 [![Build Status](https://img.shields.io/travis/summernote/django-summernote.svg)](https://travis-ci.org/summernote/django-summernote)
-[![Coverage Status](https://img.shields.io/coveralls/summernote/django-summernote.svg)](https://coveralls.io/r/summernote/django-summernote?branch=master)
 [![PyPI Download per month](https://img.shields.io/pypi/dm/django-summernote.svg)](https://pypi.python.org/pypi/django-summernote)
 
 [Summernote](https://github.com/summernote/summernote) is a simple WYSIWYG editor.

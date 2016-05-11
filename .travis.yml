@@ -5,8 +5,8 @@ python:
   - "3.4"
   - "3.5"
 install:
-  - pip install -q -U pip setuptools tox tox-travis coveralls
+  - pip install -q -U pip setuptools tox tox-travis
 script:
   - tox
 after_success:
-  coveralls
+  - bash <(curl -s https://codecov.io/bash)
