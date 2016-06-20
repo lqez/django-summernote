@@ -22,6 +22,7 @@ __summernote_options__ = [
     'dialogsFade',
     'dialogsInBody',
     'direction',
+    'disableLinkTarget',
     'focus',
     'fontNames',
     'fontNamesIgnoreCheck',
