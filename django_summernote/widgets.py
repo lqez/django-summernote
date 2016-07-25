@@ -34,6 +34,7 @@ __summernote_options__ = [
     'tableClassName',
     'tabSize',
     'toolbar',
+    'codemirror',
 
     'width',
     'height',
