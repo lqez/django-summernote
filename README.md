@@ -162,6 +162,13 @@ In settings.py,
 
         # You can disable file upload feature.
         'disable_upload': False,
+        
+        # Codemirror as codeview
+        'codemirror': {
+                # Please visit http://summernote.org/examples/#codemirror-as-codeview
+                'theme': 'monokai',
+        },
+
     }
 
   - There are pre-defined css/js files for widgets.
