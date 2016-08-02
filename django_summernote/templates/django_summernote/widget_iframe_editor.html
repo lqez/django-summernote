@@ -16,9 +16,9 @@
         var iframe = window.parent.document.getElementById('{{ id }}_iframe');
         var src = window.parent.document.getElementById('{{ id_src }}');
         var imageInput = null;
-        $(src).hide(); // for IE
+        $(src).hide(); /* for IE */
 
-        // get settings from parent window
+        /* get settings from parent window */
         var settings = window.parent.settings_{{ id }};
 
         // include summernote language pack, synchronously
