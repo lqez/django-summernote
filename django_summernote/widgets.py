@@ -136,6 +136,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
                 'STATIC_URL': settings.STATIC_URL,
+                'disable_upload': summernote_config['disable_upload'],
             }))
         )
         return mark_safe(html)

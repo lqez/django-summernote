@@ -35,6 +35,7 @@ $(function() {
             onBlur: function() {
                 {{ id }}_textarea.value = $(this).summernote('code');
             },
+            {% if not disable_upload %}
             onImageUpload: function(files) {
                 var imageInput = $('.note-image-input');
                 var sn = $(this);
@@ -58,6 +59,7 @@ $(function() {
                         alert( 'Got an error while uploading images.' );
                     });
             }
+            {% endif %}
         }
     }));
 
