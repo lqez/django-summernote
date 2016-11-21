@@ -18,6 +18,7 @@ __all__ = ['SummernoteWidget', 'SummernoteInplaceWidget']
 
 __summernote_options__ = [
     'airMode',
+    'codemirror',
     'colors',
     'dialogsFade',
     'dialogsInBody',
@@ -29,12 +30,12 @@ __summernote_options__ = [
     'fontSizes',
     'lineHeights',
     'popover',
+    'placeholder',
     'shortcuts',
     'styleWithSpan',
     'tableClassName',
     'tabSize',
     'toolbar',
-    'codemirror',
 
     'width',
     'height',
