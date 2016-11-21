@@ -136,8 +136,9 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'id_src': attrs['id'],
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
-                'STATIC_URL': settings.STATIC_URL,
                 'disable_upload': summernote_config['disable_upload'],
+                'STATIC_URL': settings.STATIC_URL,
+                'CSRF_COOKIE_NAME': settings.CSRF_COOKIE_NAME,
             }))
         )
         return mark_safe(html)
