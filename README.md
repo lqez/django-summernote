@@ -43,10 +43,13 @@ USAGE
 In `admin.py`,
 
     from django_summernote.admin import SummernoteModelAdmin
+    from .models import SomeModel
 
     # Apply summernote to all TextField in model.
     class SomeModelAdmin(SummernoteModelAdmin):  # instead of ModelAdmin
         ...
+
+    admin.site.register(SomeModel, SomeModelAdmin)
 
 Or, in `forms`,
 
@@ -161,7 +164,7 @@ In settings.py,
 
         # You can disable file upload feature.
         'disable_upload': False,
-        
+
         # Codemirror as codeview
         'codemirror': {
                 # Please visit http://summernote.org/examples/#codemirror-as-codeview
