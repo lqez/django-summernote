@@ -311,3 +311,20 @@ class DjangoSummernoteTest(TestCase):
             ma.get_form(None).base_fields['foobar'].widget,
             SummernoteWidget
         )
+
+    def test_attachment_admin_default_name(self):
+        from django_summernote.admin import AttachmentAdmin
+        from django_summernote.models import Attachment
+        from django.core.files import File
+        import os
+
+        aa = AttachmentAdmin(Attachment, self.site)
+        attachment = Attachment()
+        with open(__file__, 'rb') as fp:
+            djangoFile = File(fp)
+            djangoFile.name = os.path.basename(djangoFile.name)
+            attachment.file = djangoFile
+            self.assertEqual(attachment.name, None)
+            aa.save_model(None, attachment, None, None)
+            self.assertEqual(attachment.name, os.path.basename(__file__))
+
