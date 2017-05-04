@@ -30,21 +30,30 @@
 
         $('#summernote').html(src.value);
 
+        function recalcHeight() {
+            var nToolbar = $('.note-toolbar');
+            var nEditor = $('.note-editor');
+            var nEditable = $('.note-editable');
+            var height = parseInt(
+                settings.height  // default
+                - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                - (nEditable.innerHeight() - nEditable.height())  // editable's padding
+                - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
+            );
+            nEditable.outerHeight(height);
+        }
+
         $('#summernote').summernote($.extend(settings, {
             callbacks: {
                 onInit: function() {
-                    var nEditor = $('.note-editor');
-                    var nToolbar = $('.note-toolbar');
-                    var nEditable = $('.note-editable');
-                    var setHeight = parseInt(
-                        settings.height  // default
-                        - nToolbar.outerHeight()  // toolbar height including margin,border,padding
-                        - (nEditable.innerHeight() - nEditable.height())  // editable's padding
-                        - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
-                    );
-                    
-                    nEditable.outerHeight(setHeight);
                     $(iframe).height(settings.height);
+                    recalcHeight();
+
+                    // Resize again when the height of note-toolbar changed
+                    // This enhances calculation behaviors on Safari
+                    new ResizeSensor($('.note-toolbar'), function() {
+                        recalcHeight();
+                    });
                 },
                 onBlur: function() {
                     src.value = $("#summernote").summernote('code');
