@@ -40,3 +40,6 @@ coverage.xml
 .pydevproject
 
 .ropeproject
+
+# Virtual environments, e.g. virtualenv
+venv
