@@ -1,19 +1,20 @@
 import json
 import django
 from django import forms
-if django.VERSION >= (2, 0):
+try:
+    # Django >= 2.0
     from django.urls import reverse
-else:
+except ImportError:
     from django.core.urlresolvers import reverse
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 try:
-    # Django >=1.7
+    # Django >= 1.7
     from django.forms.utils import flatatt
 except ImportError:
-    # Django <1.7
+    # Django < 1.7
     from django.forms.util import flatatt
 from django_summernote.settings import summernote_config
 from django.conf import settings

@@ -2,9 +2,10 @@
 import django
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
-if django.VERSION >= (2, 0):
+try:
+    # Django >= 2.0
     from django.urls import reverse
-else:
+except ImportError:
     from django.core.urlresolvers import reverse
 
 from django.test import TestCase, Client
