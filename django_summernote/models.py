@@ -13,10 +13,9 @@ from django_summernote.settings import summernote_config
 __all__ = ['AbstractAttachment', 'Attachment', ]
 
 
-# module importer code comes from
-# https://github.com/django-debug-toolbar/django-debug-toolbar/
-
 def _get_attachment_storage():
+    # module importer code comes from
+    # https://github.com/django-debug-toolbar/django-debug-toolbar/
     if summernote_config['attachment_storage_class']:
         storage_path = summernote_config['attachment_storage_class']
         try:

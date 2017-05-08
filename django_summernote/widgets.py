@@ -1,12 +1,10 @@
 import json
-import django
 from django import forms
 try:
     # Django >= 2.0
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
-from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language

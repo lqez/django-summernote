@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import django
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 try:
@@ -134,8 +133,7 @@ class DjangoSummernoteTest(TestCase):
         summernote_config['attachment_storage_class'] = \
             'django.core.files.storage.DefaultStorage'
 
-        from django_summernote.models import \
-            Attachment, _get_attachment_storage
+        from django_summernote.models import _get_attachment_storage
         file_field = get_attachment_model()._meta.get_field('file')
         original_storage = file_field.storage
         file_field.storage = _get_attachment_storage()
@@ -174,7 +172,6 @@ class DjangoSummernoteTest(TestCase):
             reload(models)
 
         # IOError with patching storage class
-        from django_summernote.models import Attachment
         from dummyplug.storage import IOErrorStorage
         file_field = get_attachment_model()._meta.get_field('file')
         original_storage = file_field.storage
