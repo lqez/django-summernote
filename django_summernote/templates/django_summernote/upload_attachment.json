@@ -1,8 +1,9 @@
+{% load l10n %}
 {"files": [
 {% for attachment in attachments %}
     {
         "name": "{{ attachment.name }}",
-        "size": {{ attachment.file.size }},
+        "size": {{ attachment.file.size|unlocalize }},
         "url": "{{ attachment.file.url|safe }}"
     }
     {% if not forloop.last %},{% endif %}

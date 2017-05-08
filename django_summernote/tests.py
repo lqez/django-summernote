@@ -8,7 +8,7 @@ try:
 except ImportError:
     from django.core.urlresolvers import reverse
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django_summernote.settings import summernote_config, get_attachment_model
 from imp import reload
 
@@ -265,6 +265,18 @@ class DjangoSummernoteTest(TestCase):
         with open(__file__, 'rb') as fp:
             response = self.client.post(url, {'files': [fp]})
             self.assertEqual(response.status_code, 200)
+
+    @override_settings(USE_THOUSAND_SEPARATOR=True)
+    def test_attachment_with_thousand_separator_option(self):
+        import os
+        url = reverse('django_summernote-upload_attachment')
+        size = os.path.getsize(__file__)
+
+        with open(__file__, 'rb') as fp:
+            response = self.client.post(url, {'files': [fp]})
+            self.assertEqual(response.status_code, 200)
+            print response
+            self.assertEqual(response.json()['files'][0]['size'], size)
 
     def test_lang_specified(self):
         old_lang = summernote_config['lang']

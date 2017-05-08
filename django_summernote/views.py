@@ -1,11 +1,9 @@
-from django.http import (
-    HttpResponseBadRequest,
-    HttpResponseServerError,
-    HttpResponseForbidden,
-)
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django_summernote.settings import summernote_config, get_attachment_model
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
+from django_summernote.settings import summernote_config, get_attachment_model
+
 
 def editor(request, id):
     return render(
@@ -29,14 +27,23 @@ def editor(request, id):
 
 def upload_attachment(request):
     if request.method != 'POST':
-        return HttpResponseBadRequest(_('Only POST method is allowed'))
+        return JsonResponse({
+            'status': 'false',
+            'message': _('Only POST method is allowed'),
+        }, status=400)
 
     if summernote_config['attachment_require_authentication']:
         if not request.user.is_authenticated():
-            return HttpResponseForbidden(_('Only authenticated users are allowed'))
+            return JsonResponse({
+                'status': 'false',
+                'message': _('Only authenticated users are allowed'),
+            }, status=403)
 
     if not request.FILES.getlist('files'):
-        return HttpResponseBadRequest(_('No files were requested'))
+        return JsonResponse({
+            'status': 'false',
+            'message': _('No files were requested'),
+        }, status=400)
 
     # remove unnecessary CSRF token, if found
     kwargs = request.POST.copy()
@@ -55,17 +62,20 @@ def upload_attachment(request):
             attachment.name = file.name
 
             if file.size > summernote_config['attachment_filesize_limit']:
-                return HttpResponseBadRequest(
-                    _('File size exceeds the limit allowed and cannot be saved')
-                )
+                return JsonResponse({
+                    'status': 'false',
+                    'message': _('File size exceeds the limit allowed and cannot be saved'),
+                }, status=400)
 
             # calling save method with attachment parameters as kwargs
             attachment.save(**kwargs)
-
             attachments.append(attachment)
 
-        return render(request, 'django_summernote/upload_attachment.json', {
+        return HttpResponse(render_to_string('django_summernote/upload_attachment.json', {
             'attachments': attachments,
-        })
+        }), content_type='application/json')
     except IOError:
-        return HttpResponseServerError(_('Failed to save attachment'))
+        return JsonResponse({
+            'status': 'false',
+            'message': _('Failed to save attachment'),
+        }, status=500)
