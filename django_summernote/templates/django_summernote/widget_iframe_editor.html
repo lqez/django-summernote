@@ -35,9 +35,8 @@
             var nEditor = $('.note-editor');
             var nEditable = $('.note-editable');
             var height = parseInt(
-                settings.height  // default
+                parseInt(settings.height)  // default
                 - nToolbar.outerHeight()  // toolbar height including margin,border,padding
-                - (nEditable.innerHeight() - nEditable.height())  // editable's padding
                 - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
             );
             nEditable.outerHeight(height);

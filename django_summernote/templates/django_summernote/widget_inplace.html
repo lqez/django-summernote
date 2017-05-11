@@ -16,21 +16,30 @@ $(function() {
 
     $({{ id }}_textarea).hide();
 
+    function recalcHeight(nEditor) {
+        var nToolbar = nEditor.find('.note-toolbar');
+        var nStatusbar = nEditor.find('.note-statusbar');
+        var nEditable = nEditor.find('.note-editable');
+        var height = parseInt(
+            parseInt({{ id }}_settings.height)  // default
+            - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+            - nStatusbar.outerHeight()  // statusbar height including margin,border,padding
+        );
+        nEditable.outerHeight(height);
+    }
+
     $summernote = $({{ id }}_src);
     $summernote.summernote($.extend({{ id }}_settings, {
         callbacks: {
             onInit: function() {
-                var nEditor = $('.note-editor');
-                var nToolbar = $('.note-toolbar');
-                var nEditable = $('.note-editable');
-                var nStatusbar = $('.note-statusbar');
-                var setHeight = parseInt({{ id }}_settings.height)  // default
-                        - nToolbar.outerHeight()  // toolbar height including margin,border,padding
-                        - (nEditable.innerHeight() - nEditable.height())  // editable's padding
-                        - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
-                        - nStatusbar.outerHeight();  // status bar height
+                var nEditor = $('#{{ id_src }}').next();
+                recalcHeight(nEditor);
 
-                nEditable.height(setHeight);
+                // Resize again when the height of note-toolbar changed
+                // This enhances calculation behaviors on Safari
+                new ResizeSensor(nEditor.find('.note-toolbar'), function() {
+                    recalcHeight(nEditor);
+                });
             },
             onBlur: function() {
                 {{ id }}_textarea.value = $(this).summernote('code');
