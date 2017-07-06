@@ -73,7 +73,6 @@ class SummernoteWidgetBase(forms.Textarea):
                 if '.__proxy__' in str(type(v)):
                     v = str(v)
                 contexts[option] = v
-                contexts[option] = v
 
         return contexts
 
