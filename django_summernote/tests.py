@@ -60,7 +60,7 @@ class DjangoSummernoteTest(TestCase):
         widget = SummernoteInplaceWidget()
         # Force an attribute to be an unevaluated __proxy__ type. This is how django handles string translations.
         html = widget.render(
-            'foobar', 'lorem ipsum', attrs={x: ugettext_lazy('yada') for x in __summernote_options__ }
+            'foobar', 'lorem ipsum', attrs={x: ugettext_lazy('yada') for x in ['id'] + __summernote_options__ }
         )
  
         assert 'summernote' in html
