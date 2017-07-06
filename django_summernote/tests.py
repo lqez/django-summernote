@@ -62,7 +62,7 @@ class DjangoSummernoteTest(TestCase):
             'foobar', 'lorem ipsum', attrs={'id': 'id_foobar', 'width': ugettext_lazy('100%')}
         )
  
-         assert 'summernote' in html
+        assert 'summernote' in html
 
     def test_form(self):
         from django import forms
