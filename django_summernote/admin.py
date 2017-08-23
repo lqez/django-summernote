@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.db import models
 from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
-from django_summernote.models import Attachment
 from django_summernote.settings import summernote_config, get_attachment_model
 
 __widget__ = SummernoteWidget if summernote_config['iframe'] \
