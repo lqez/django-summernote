@@ -39,7 +39,6 @@ __summernote_options__ = [
     'tableClassName',
     'tabSize',
     'toolbar',
-
     'width',
     'height',
 ]
@@ -65,7 +64,8 @@ class SummernoteWidgetBase(forms.Textarea):
 
         for option in __summernote_options__:
             v = self.attrs.get(option, summernote_config.get(option))
-            if v:
+
+            if v is not None:
                 # Proxy models are not JSON serializable. Values obtained from the Django core via ugettext_lazy will
                 # return a __proxy__ type that is not serializble using the default serializers.
                 # This quick hack checks to see if the value is a proxy type and if so forces evaluation

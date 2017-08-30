@@ -10,6 +10,12 @@ django-summernote
 ![django-summernote](https://raw.github.com/lqez/pastebin/master/img/django-summernote.png "Screenshot of django-summernote")
 
 
+파이콘 한국 2017 스프린터를 위한 안내서
+---------------------------------------
+
+django-summernote / summernote 스프린트를 파이콘 한국 2017에서 8/14-15일에 진행합니다.
+참가자 분들은 https://github.com/summernote/django-summernote/issues 에 pyconkr2017로 라벨링된 이슈부터 확인해 주시면 감사드리겠습니다.
+
 
 SETUP
 -----
@@ -31,7 +37,20 @@ SETUP
         ]
 
 4. Be sure to set proper `MEDIA_URL` for attachments.
-     - <https://docs.djangoproject.com/en/1.9/topics/files/>
+     - The following is an example test code:
+     
+           MEDIA_URL = '/media/'
+           MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+    
+     - When debug option is enabled(```DEBUG=True```), DO NOT forget to add urlpatterns as shown below:
+     
+            from django.conf import settings
+            from django.conf.urls.static import static
+            
+            if settings.DEBUG:
+                urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+            
+     - Please, read the official document more in detail: <https://docs.djangoproject.com/en/1.11/topics/files/>
 
 5. Run database migration for preparing attachment model.
 
@@ -39,7 +58,8 @@ SETUP
 
 USAGE
 -----
-
+## Django admin site
+### Apply summernote to all TextField in model
 In `admin.py`,
 
     from django_summernote.admin import SummernoteModelAdmin
@@ -51,7 +71,32 @@ In `admin.py`,
 
     admin.site.register(SomeModel, SomeModelAdmin)
 
-Or, in `forms`,
+### Apply summernote to not all TextField in model
+Although `Post` model has several TextField, only `content` field will have `SummernoteWidget`.
+
+In `admin.py`,
+
+    from django import forms
+    from django.contrib import admin
+    from django_summernote.widgets import SummernoteWidget    
+    from .models import Post
+
+    class PostAdminForm(forms.ModelForm):
+        class Meta:
+            model = Post
+            widgets = {
+                'content': SummernoteWidget(),
+            }
+            fields = '__all__'   
+    
+    class PostAdmin(admin.ModelAdmin):
+        form = PostAdminForm
+        ...
+    
+    admin.site.register(Post, PostAdmin)
+
+## Form
+In `forms`,
 
     from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
 
