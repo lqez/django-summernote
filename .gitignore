@@ -46,3 +46,6 @@ venv
 
 # PyCharm
 .idea/*
+
+# Sample database
+*.sqlite3
