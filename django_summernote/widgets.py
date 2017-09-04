@@ -139,6 +139,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
                 'disable_upload': summernote_config['disable_upload'],
+                'lazy': summernote_config['lazy'],
                 'STATIC_URL': settings.STATIC_URL,
                 'CSRF_COOKIE_NAME': settings.CSRF_COOKIE_NAME,
             }

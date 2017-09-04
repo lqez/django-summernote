@@ -135,6 +135,9 @@ SETTINGS_DEFAULT = {
     'js_for_inplace': (),
     # Disable upload
     'disable_upload': False,
+
+    # For lazy loading
+    'lazy': True,
 }
 
 summernote_config = SETTINGS_DEFAULT.copy()
