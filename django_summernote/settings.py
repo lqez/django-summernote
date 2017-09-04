@@ -109,6 +109,8 @@ SETTINGS_DEFAULT = {
     'attachment_require_authentication': False,
     'attachment_model': 'django_summernote.Attachment',
 
+    'jquery': '$',
+
     'base_css': (
         '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
     ),
@@ -133,6 +135,7 @@ SETTINGS_DEFAULT = {
 
     'css_for_inplace': (),
     'js_for_inplace': (),
+
     # Disable upload
     'disable_upload': False,
 }
