@@ -13,5 +13,6 @@ class SampleForm(forms.Form):
 
 def index(request):
     return render(request, 'index.html', {
+        'submitted': request.POST.get('desc'),
         'form': SampleForm(),
     })

@@ -21,8 +21,16 @@
 <body>
     <div class="container">
         <div class="row">
-        <h1>django-summernote playground</h1>
-        {{ form.as_p }}
+            {% if submitted %}
+            <h1>Submitted</h1>
+            <pre>{{ submitted }}</pre>
+            {% endif %}
+            <h1>django-summernote playground</h1>
+            <form enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Submit">
+            </form>
         </div>
     </div>
 </body>
