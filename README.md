@@ -170,21 +170,22 @@ In settings.py,
         'attachment_model': 'my.custom.attachment.model', # must inherit 'django_summernote.AbstractAttachment'
 
         # Set common css/js media files
-        'external_css': (                                             
-            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',      
-        ),                                                                          
-        'external_js': (                                              
-            '//code.jquery.com/jquery-1.9.1.min.js',                                
-            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',        
+        'base_css': (
+            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css',
         ),
-        'internal_css': (
-            static_url('django_summernote/summernote.css'),
+        'base_js': (
+            '//code.jquery.com/jquery-1.9.1.min.js',
+            '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js',
         ),
-        'internal_js': (
-            static_url('django_summernote/jquery.ui.widget.js'),
-            static_url('django_summernote/jquery.iframe-transport.js'),
-            static_url('django_summernote/jquery.fileupload.js'),
-            static_url('django_summernote/summernote.min.js'),
+        'default_css': (
+            os.path.join(STATIC_URL, 'django_summernote/summernote.css'),
+            os.path.join(STATIC_URL, 'django_summernote/django_summernote.css'),
+        ),
+        'default_js': (
+            os.path.join(STATIC_URL, 'django_summernote/jquery.ui.widget.js'),
+            os.path.join(STATIC_URL, 'django_summernote/jquery.iframe-transport.js'),
+            os.path.join(STATIC_URL, 'django_summernote/jquery.fileupload.js'),
+            os.path.join(STATIC_URL, 'django_summernote/summernote.min.js'),
         ),
 
         # You can add custom css/js for SummernoteWidget.
@@ -193,7 +194,7 @@ In settings.py,
         'js': (
         ),
 
-        # And also for SummernoteInplaceWidget.
+        # You can also add custom css/js for SummernoteInplaceWidget.
         # !!! Be sure to put {{ form.media }} in template before initiate summernote.
         'css_for_inplace': (
         ),
