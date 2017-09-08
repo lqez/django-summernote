@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.shortcuts import render
-from django_summernote.widgets import SummernoteInplaceWidget
+from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
 
 
 class SampleForm(forms.Form):
-    desc = forms.CharField(
+    desc1 = forms.CharField(
+        label='',
+        widget=SummernoteWidget()
+    )
+    desc2 = forms.CharField(
         label='',
         widget=SummernoteInplaceWidget()
     )
@@ -13,6 +17,7 @@ class SampleForm(forms.Form):
 
 def index(request):
     return render(request, 'index.html', {
-        'submitted': request.POST.get('desc'),
+        'desc1': request.POST.get('desc1'),
+        'desc2': request.POST.get('desc2'),
         'form': SampleForm(),
     })
