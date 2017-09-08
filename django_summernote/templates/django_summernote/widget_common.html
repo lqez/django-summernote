@@ -1,6 +1,6 @@
 {% load staticfiles %}
 <script>
-function initSummernote() {
+function initSummernote_{{ id }}() {
     {{ jquery }}(document).ready(function($) {
 {% if iframe %}
         var iframe = window.parent.document.getElementById('{{ id }}_iframe');
@@ -9,6 +9,7 @@ function initSummernote() {
         var settings = window.parent.settings_{{ id }};
         var $sn = $('#summernote');
         $sn.html(origin.value);
+        $(iframe).height(settings.height);
 {% else %}
         var origin = window.document.getElementById('{{ id_src }}-textarea');
         var csrftoken = getCookie('{{ CSRF_COOKIE_NAME }}');
@@ -50,11 +51,8 @@ function initSummernote() {
 {% endif %}
             callbacks: {
                 onInit: function() {
-{% if iframe %}
-                    $(iframe).height(settings.height);
-{% endif %}
-
                     $nEditor = $sn.next();
+                    $nCodable = $nEditor.find('.note-codable');
                     $nImageInput = $nEditor.find('.note-image-input');
                     recalcHeight($nEditor);
 
@@ -77,6 +75,10 @@ function initSummernote() {
                             var left = windowWidth - width - offset.left - margin;
                             nDropdown.css("left", left + "px");
                         }
+                    });
+
+                    $nCodable.blur(function() {
+                        origin.value = $nCodable.val();
                     });
                 },
                 onBlur: function() {
@@ -114,6 +116,16 @@ function initSummernote() {
             }
         }));
 
+        // For CodeMirror
+        $sn.on('summernote.codeview.toggled', function() {
+            var cmEditor = $nCodable.data('cmEditor');
+            if( cmEditor ) {
+                cmEditor.on('blur', function() {
+                    origin.value = cmEditor.getValue();
+                });
+            }
+        });
+
         // See https://docs.djangoproject.com/en/dev/ref/contrib/csrf/#ajax
         function getCookie(name) {
             var cookieValue = null;
@@ -133,6 +145,6 @@ function initSummernote() {
     });
 }
 {% if not lazy %}
-initSummernote();
+initSummernote_{{ id }}();
 {% endif %}
 </script>
