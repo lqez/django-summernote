@@ -216,6 +216,10 @@ In settings.py,
                 'theme': 'monokai',
         },
 
+        # Lazy initialize
+        # If you want to initialize summernote at the bottom of page, set this as True
+        # and call `initSummernote()` on your page.
+        'lazy': True,
     }
 
   - There are pre-defined css/js files for widgets.

@@ -138,6 +138,9 @@ SETTINGS_DEFAULT = {
 
     # Disable upload
     'disable_upload': False,
+
+    # For lazy loading
+    'lazy': False,
 }
 
 summernote_config = SETTINGS_DEFAULT.copy()
