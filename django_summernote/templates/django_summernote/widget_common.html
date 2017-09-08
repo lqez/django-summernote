@@ -1,0 +1,138 @@
+{% load staticfiles %}
+<script>
+function initSummernote() {
+    {{ jquery }}(document).ready(function($) {
+{% if iframe %}
+        var iframe = window.parent.document.getElementById('{{ id }}_iframe');
+        var origin = window.parent.document.getElementById('{{ id_src }}');
+        var csrftoken = '{{ csrf_token }}';
+        var settings = window.parent.settings_{{ id }};
+        var $sn = $('#summernote');
+        $sn.html(origin.value);
+{% else %}
+        var origin = window.document.getElementById('{{ id_src }}-textarea');
+        var csrftoken = getCookie('{{ CSRF_COOKIE_NAME }}');
+        var settings = {{ settings|safe }};
+        var $sn = $('#{{ id_src }}');
+{% endif %}
+        var $nEditor, $nCodable, $nImageInput;
+        $(origin).hide();
+
+        // include summernote language pack, synchronously
+        if( settings.lang != 'en-US' ) {
+            $.ajax({url: settings.url.language, dataType: "script", async: false})
+        }
+
+        function recalcHeight(e) {
+            var nToolbar = e.find('.note-toolbar');
+            var nEditable = e.find('.note-editable');
+{% if iframe %}
+            var nEditor = $('.note-editor');
+            var height = parseInt(
+                parseInt(settings.height)  // default
+                - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                - (nEditor.outerHeight() - nEditor.innerHeight())  // editor's border
+            );
+{% else %}
+            var nStatusbar = e.find('.note-statusbar');
+            var height = parseInt(
+                parseInt(settings.height)  // default
+                - nToolbar.outerHeight()  // toolbar height including margin,border,padding
+                - nStatusbar.outerHeight()  // statusbar height including margin,border,padding
+            );
+{% endif %}
+            nEditable.outerHeight(height);
+        }
+
+        $sn.summernote($.extend(settings, {
+{% if iframe %}
+            disableResizeEditor: true,
+{% endif %}
+            callbacks: {
+                onInit: function() {
+{% if iframe %}
+                    $(iframe).height(settings.height);
+{% endif %}
+
+                    $nEditor = $sn.next();
+                    $nImageInput = $nEditor.find('.note-image-input');
+                    recalcHeight($nEditor);
+
+                    // Resize again when the height of note-toolbar changed
+                    // This enhances calculation behaviors on Safari
+                    new ResizeSensor($nEditor.find('.note-toolbar'), function() {
+                        recalcHeight($nEditor);
+                    });
+
+                    // Move dropdown dialog when it exeeds the bound of the editor
+                    $nEditor.find('.note-btn-group').on('shown.bs.dropdown', function () {
+                        var nDropdown = $(this).find(".dropdown-menu");
+                        var offset = nDropdown.offset();
+                        var width = nDropdown.width();
+
+                        var windowWidth = $(window).width();
+                        var margin = 15;
+
+                        if( offset.left + width + margin > windowWidth ) {
+                            var left = windowWidth - width - offset.left - margin;
+                            nDropdown.css("left", left + "px");
+                        }
+                    });
+                },
+                onBlur: function() {
+                    origin.value = $sn.summernote('code');
+                },
+                {% if not disable_upload %}
+                onImageUpload: function(files) {
+                    // custom attachment data
+                    var attachmentData = origin.dataset;
+                    $nImageInput.fileupload();
+                    var jqXHR = $nImageInput.fileupload('send', 
+                        {
+                            files: files,
+                            formData: $.extend({csrfmiddlewaretoken: csrftoken}, attachmentData),
+                            url: settings.url.upload_attachment,
+                        })
+                        .done(function (data, textStatus, jqXHR) {
+                            $.each(data.files, function (index, file) {
+                                $sn.summernote("insertImage", file.url);
+                            });
+                        })
+                        .fail(function (jqXHR, textStatus, errorThrown) {
+                            // if the error message from the server has any text in it, show it
+                            var msg = jqXHR.responseText;
+                            if (msg.length > 0) {
+                                alert('Got an error uploading an image: ' + msg);
+                            }
+                            // otherwise, show something generic
+                            else {
+                                alert('Got an error while uploading images.');
+                            }
+                        });
+                }
+                {% endif %}
+            }
+        }));
+
+        // See https://docs.djangoproject.com/en/dev/ref/contrib/csrf/#ajax
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+}
+{% if not lazy %}
+initSummernote();
+{% endif %}
+</script>
