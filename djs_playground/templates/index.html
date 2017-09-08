@@ -21,9 +21,13 @@
 <body>
     <div class="container">
         <div class="row">
-            {% if submitted %}
-            <h1>Submitted</h1>
-            <pre>{{ submitted }}</pre>
+            {% if desc1 %}
+            <h1>desc1</h1>
+            <pre>{{ desc1 }}</pre>
+            {% endif %}
+            {% if desc2 %}
+            <h1>desc2</h1>
+            <pre>{{ desc2 }}</pre>
             {% endif %}
             <h1>django-summernote playground</h1>
             <form enctype="multipart/form-data" method="post">
