@@ -101,6 +101,7 @@ class SummernoteWidget(SummernoteWidgetBase):
                 'id_src': attrs['id'],
                 'src': url,
                 'attrs': flatatt(final_attrs),
+                'jquery': summernote_config['jquery'],
                 'width': contexts['width'],
                 'height': contexts['height'],
                 'settings': json.dumps(contexts),
@@ -136,6 +137,7 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
             {
                 'id': attrs['id'].replace('-', '_'),
                 'id_src': attrs['id'],
+                'jquery': summernote_config['jquery'],
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
                 'disable_upload': summernote_config['disable_upload'],

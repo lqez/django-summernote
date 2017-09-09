@@ -2,7 +2,7 @@
 <div id='{{ id_src }}'>{{ value|safe }}</div>
 <script>
 function initSummernote() {
-    $(function() {
+    {{ jquery }}(document).ready(function($) {
         var {{ id }}_textarea = window.document.getElementById('{{ id_src }}-textarea');
         var {{ id }}_src = window.document.getElementById('{{ id_src }}');
         var {{ id }}_settings = {{ settings|safe }};

@@ -46,3 +46,7 @@ venv
 
 # PyCharm
 .idea/*
+
+# Sample database and files
+*.sqlite3
+djs_playground/media
