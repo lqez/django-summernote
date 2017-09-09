@@ -5,6 +5,7 @@ try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
@@ -54,11 +55,14 @@ def _get_proper_language():
 
 class SummernoteWidgetBase(forms.Textarea):
     def template_contexts(self):
+        lang = _get_proper_language()
         contexts = {
-            'lang': _get_proper_language(),
+            'lang': lang,
             'url': {
+                'language':
+                    static('django_summernote/lang/summernote-' + lang + '.min.js'),
                 'upload_attachment':
-                reverse('django_summernote-upload_attachment'),
+                    reverse('django_summernote-upload_attachment'),
             },
         }
 
@@ -105,7 +109,6 @@ class SummernoteWidget(SummernoteWidgetBase):
                 'width': contexts['width'],
                 'height': contexts['height'],
                 'settings': json.dumps(contexts),
-                'STATIC_URL': settings.STATIC_URL,
             }
         )
         return mark_safe(html)
@@ -132,17 +135,20 @@ class SummernoteInplaceWidget(SummernoteWidgetBase):
         html = super(SummernoteInplaceWidget, self).render(name,
                                                            value,
                                                            attrs_for_textarea)
+        final_attrs = self.build_attrs(attrs)
+        del final_attrs['id']  # Use original attributes without id.
+
         html += render_to_string(
             'django_summernote/widget_inplace.html',
             {
                 'id': attrs['id'].replace('-', '_'),
                 'id_src': attrs['id'],
+                'attrs': flatatt(final_attrs),
                 'jquery': summernote_config['jquery'],
                 'value': value if value else '',
                 'settings': json.dumps(self.template_contexts()),
                 'disable_upload': summernote_config['disable_upload'],
                 'lazy': summernote_config['lazy'],
-                'STATIC_URL': settings.STATIC_URL,
                 'CSRF_COOKIE_NAME': settings.CSRF_COOKIE_NAME,
             }
         )
