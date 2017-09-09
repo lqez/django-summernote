@@ -12,7 +12,7 @@
         <div id="summernote"></div>
     </body>
     <script>
-    $(function() {
+    {{ jquery }}(document).ready(function($) {
         var iframe = window.parent.document.getElementById('{{ id }}_iframe');
         var src = window.parent.document.getElementById('{{ id_src }}');
         var imageInput = null;
