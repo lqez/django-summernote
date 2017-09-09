@@ -105,6 +105,7 @@ class SummernoteWidget(SummernoteWidgetBase):
                 'id_src': attrs['id'],
                 'src': url,
                 'attrs': flatatt(final_attrs),
+                'jquery': summernote_config['jquery'],
                 'width': contexts['width'],
                 'height': contexts['height'],
                 'settings': json.dumps(contexts),
