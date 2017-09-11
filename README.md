@@ -205,9 +205,16 @@ In settings.py,
         'disable_upload': False,
 
         # Codemirror as codeview
+        # If any codemirror settings are defined, it will include codemirror files automatically.
+        'css': {
+            '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/theme/monokai.min.css',
+        }
         'codemirror': {
-                # Please visit http://summernote.org/examples/#codemirror-as-codeview
-                'theme': 'monokai',
+            'mode': 'htmlmixed',
+            'lineNumbers': 'true',
+
+            # You have to include theme file in 'css' or 'css_for_inplace' before using it.
+            'theme': 'monokai',
         },
 
         # Lazy initialize

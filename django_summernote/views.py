@@ -6,22 +6,24 @@ from django_summernote.settings import summernote_config, get_attachment_model
 
 
 def editor(request, id):
+    css = summernote_config['base_css'] \
+        + (summernote_config['codemirror_css'] if 'codemirror' in summernote_config else ()) \
+        + summernote_config['default_css'] \
+        + summernote_config['css']
+
+    js = summernote_config['base_js'] \
+        + (summernote_config['codemirror_js'] if 'codemirror' in summernote_config else ()) \
+        + summernote_config['default_js'] \
+        + summernote_config['js']
+
     return render(
         request,
         'django_summernote/widget_iframe_editor.html',
         {
             'id_src': id,
             'id': id.replace('-', '_'),
-            'css': (
-                summernote_config['base_css'] +
-                summernote_config['css'] +
-                summernote_config['default_css']
-            ),
-            'js': (
-                summernote_config['base_js'] +
-                summernote_config['js'] +
-                summernote_config['default_js']
-            ),
+            'css': css,
+            'js': js,
             'disable_upload': summernote_config['disable_upload'],
             'jquery': summernote_config['jquery'],
         }
