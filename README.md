@@ -235,23 +235,8 @@ You can also pass additional parameters to custom `Attachment` model by adding a
         foo = forms.CharField(widget=SummernoteWidget(attrs={'data-user-id': 123456, 'data-device': 'iphone'}))
 
 
-AUTHOR
-------
-
-Park Hyunwoo([@lqez](https://twitter.com/lqez))
-
-
-THANKS TO
----------
-
-  - [jaeyoung](https://github.com/jeyraof) : Debugging on Django 1.4
-  - [kroisse](https://github.com/kroisse) : Fixing problem on importing module
-
 LICENSE
 -------
 
 `django-summernote` is distributed under MIT license.
 
-And also uses below libraries.
-
-  - jQuery File Upload : http://blueimp.github.io/jQuery-File-Upload/
