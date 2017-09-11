@@ -33,7 +33,9 @@ for directory in ['static', 'templates']:
 setup(
     name=PROJECT,
     version=version,
-    packages=find_packages(),
+    packages=find_packages(exclude=(
+        'djs_playground',
+    )),
     package_data={'': PACKAGE_DATA, },
     zip_safe=False,
 
