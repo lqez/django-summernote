@@ -134,4 +134,5 @@ SUMMERNOTE_CONFIG = {
         'mode': 'htmlmixed',
         'lineNumbers': 'true',
     },
+    'lazy': True,
 }
