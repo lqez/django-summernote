@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from django.apps import apps as django_apps
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -35,10 +36,6 @@ def get_attachment_model():
         raise ImproperlyConfigured(
             "SUMMERNOTE_CONFIG['attachment_model'] refers to model '%s' that has not been installed" % summernote_config["attachment_model"]
         )
-
-
-def static_url(url):
-    return os.path.join(settings.STATIC_URL, url)
 
 
 SETTINGS_USER = getattr(settings, 'SUMMERNOTE_CONFIG', {})
@@ -129,15 +126,15 @@ SETTINGS_DEFAULT = {
     ),
 
     'default_css': (
-        static_url('django_summernote/summernote.css'),
-        static_url('django_summernote/django_summernote.css'),
+        static('django_summernote/summernote.css'),
+        static('django_summernote/django_summernote.css'),
     ),
     'default_js': (
-        static_url('django_summernote/jquery.ui.widget.js'),
-        static_url('django_summernote/jquery.iframe-transport.js'),
-        static_url('django_summernote/jquery.fileupload.js'),
-        static_url('django_summernote/summernote.min.js'),
-        static_url('django_summernote/ResizeSensor.js'),
+        static('django_summernote/jquery.ui.widget.js'),
+        static('django_summernote/jquery.iframe-transport.js'),
+        static('django_summernote/jquery.fileupload.js'),
+        static('django_summernote/summernote.min.js'),
+        static('django_summernote/ResizeSensor.js'),
     ),
 
     'css': (),

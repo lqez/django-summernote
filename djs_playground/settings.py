@@ -123,7 +123,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'djs_playground/media/')
 SUMMERNOTE_CONFIG = {
     'width': '100%',
     'height': '200px',
+    'css': (
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/theme/base16-dark.min.css',
+    ),
+    'css_for_inplace': (
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/theme/base16-dark.min.css',
+    ),
     'codemirror': {
+        'theme': 'base16-dark',
         'mode': 'htmlmixed',
         'lineNumbers': 'true',
     },
