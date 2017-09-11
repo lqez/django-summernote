@@ -78,6 +78,8 @@ class SummernoteWidgetBase(forms.Textarea):
                     v = str(v)
                 contexts[option] = v
 
+        # Merge 'summernote' dict as it is.
+        contexts.update(summernote_config.get('summernote', {}))
         return contexts
 
     def value_from_datadict(self, data, files, name):
