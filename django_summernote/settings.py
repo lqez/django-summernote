@@ -119,6 +119,15 @@ SETTINGS_DEFAULT = {
         '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
     ),
 
+    'codemirror_css': (
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/codemirror.min.css',
+    ),
+    'codemirror_js': (
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/codemirror.min.js',
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/mode/xml/xml.min.js',
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/mode/htmlmixed/htmlmixed.min.js',
+    ),
+
     'default_css': (
         static_url('django_summernote/summernote.css'),
         static_url('django_summernote/django_summernote.css'),
@@ -130,6 +139,7 @@ SETTINGS_DEFAULT = {
         static_url('django_summernote/summernote.min.js'),
         static_url('django_summernote/ResizeSensor.js'),
     ),
+
     'css': (),
     'js': (),
 
@@ -139,7 +149,7 @@ SETTINGS_DEFAULT = {
     # Disable upload
     'disable_upload': False,
 
-    # For lazy loading
+    # For lazy loading (inplace widget only)
     'lazy': False,
 }
 

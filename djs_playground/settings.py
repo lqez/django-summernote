@@ -123,4 +123,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'djs_playground/media/')
 SUMMERNOTE_CONFIG = {
     'width': '100%',
     'height': '200px',
+    'codemirror': {
+        'mode': 'htmlmixed',
+        'lineNumbers': 'true',
+    },
 }
