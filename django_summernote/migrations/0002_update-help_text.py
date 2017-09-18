@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='attachment',
             name='name',
-            field=models.CharField(blank=True, help_text=b'Defaults to filename, if left blank', max_length=255, null=True),
+            field=models.CharField(blank=True, help_text='Defaults to filename, if left blank', max_length=255, null=True),
         ),
     ]
