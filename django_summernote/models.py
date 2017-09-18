@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.db import models
 from django.core.files.storage import default_storage
 from django.core.exceptions import ImproperlyConfigured
@@ -63,4 +64,3 @@ class AbstractAttachment(models.Model):
 
 class Attachment(AbstractAttachment):
     pass
-
