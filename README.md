@@ -221,6 +221,19 @@ In settings.py,
         # If you want to initialize summernote at the bottom of page, set this as True
         # and call `initSummernote()` on your page.
         'lazy': True,
+
+        # To use external plugins,
+        # Include them within `css` and `js`.
+        'js': {
+            '/some_static_folder/summernote-ext-print.js',
+            '//somewhere_in_internet/summernote-plugin-name.js',
+        }
+        # You can also add custom settings in `summernote` section.
+        'summernote': {
+            'print': {
+                'stylesheetUrl': '/some_static_folder/printable.css',
+            },
+        }
     }
 
   - There are pre-defined css/js files for widgets.
