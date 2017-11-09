@@ -68,7 +68,7 @@ class SummernoteWidgetBase(forms.Textarea):
         }
 
         if lang != 'en-US':
-            contexts['url']['language'] = static('django_summernote/lang/summernote-' + lang + '.min.js')
+            contexts['url']['language'] = static('summernote/lang/summernote-' + lang + '.min.js')
 
         for option in __summernote_options__:
             v = self.attrs.get(option, summernote_config.get(option))
