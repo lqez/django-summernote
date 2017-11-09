@@ -126,15 +126,15 @@ SETTINGS_DEFAULT = {
     ),
 
     'default_css': (
-        'django_summernote/summernote.css',
-        'django_summernote/django_summernote.css',
+        'summernote/summernote.css',
+        'summernote/django_summernote.css',
     ),
     'default_js': (
-        'django_summernote/jquery.ui.widget.js',
-        'django_summernote/jquery.iframe-transport.js',
-        'django_summernote/jquery.fileupload.js',
-        'django_summernote/summernote.min.js',
-        'django_summernote/ResizeSensor.js',
+        'summernote/jquery.ui.widget.js',
+        'summernote/jquery.iframe-transport.js',
+        'summernote/jquery.fileupload.js',
+        'summernote/summernote.min.js',
+        'summernote/ResizeSensor.js',
     ),
 
     'css': (),
