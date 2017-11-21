@@ -3,3 +3,4 @@ exclude django_summernote/test*
 prune djs_playground
 
 global-exclude *.pyc
+global-exclude .ropeproject/*
